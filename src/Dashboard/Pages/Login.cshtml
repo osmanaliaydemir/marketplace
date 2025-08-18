@@ -1,0 +1,119 @@
+@page
+@model Dashboard.Pages.LoginModel
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Giriş - Marketplace</title>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 2rem;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card login-card">
+                    <div class="login-header text-center">
+                        <h3 class="mb-0">
+                            <i class="bi bi-shield-lock me-2"></i>
+                            Dashboard Giriş
+                        </h3>
+                        <p class="mb-0 mt-2 opacity-75">Marketplace Yönetim Paneli</p>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                @Model.ErrorMessage
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                        {
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle me-2"></i>
+                                @Model.SuccessMessage
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+
+                        <form method="post">
+                            <div class="mb-3">
+                                <label asp-for="LoginForm.EmailOrUsername" class="form-label">
+                                    <i class="bi bi-person me-2"></i>Email veya Kullanıcı Adı
+                                </label>
+                                <input asp-for="LoginForm.EmailOrUsername" class="form-control form-control-lg" 
+                                       placeholder="ornek@email.com veya kullanici_adi" />
+                                <span asp-validation-for="LoginForm.EmailOrUsername" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label asp-for="LoginForm.Password" class="form-label">
+                                    <i class="bi bi-lock me-2"></i>Şifre
+                                </label>
+                                <input asp-for="LoginForm.Password" type="password" class="form-control form-control-lg" 
+                                       placeholder="Şifrenizi girin" />
+                                <span asp-validation-for="LoginForm.Password" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                                    Giriş Yap
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Geliştirme modunda: admin@marketplace.local / admin123
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

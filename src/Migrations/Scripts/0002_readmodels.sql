@@ -1,0 +1,4 @@
+-- Read models schema (örnek)
+-- CREATE SCHEMA read;
+-- CREATE TABLE read.product_search (...);
+-- CREATE TABLE read.seller_dashboard_daily (...);

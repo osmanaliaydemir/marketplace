@@ -1,0 +1,38 @@
+@page
+@model Web.Pages.StoreApplications.ApplyModel
+
+<h2>Mağaza Başvurusu</h2>
+
+<form method="post">
+    <div>
+        <label>Mağaza Adı</label>
+        <input asp-for="Form.StoreName" />
+    </div>
+    <div>
+        <label>Slug</label>
+        <input asp-for="Form.Slug" />
+    </div>
+    <div>
+        <label>İletişim Email</label>
+        <input asp-for="Form.ContactEmail" />
+    </div>
+    <div>
+        <label>Telefon</label>
+        <input asp-for="Form.ContactPhone" />
+    </div>
+    <div>
+        <label>Açıklama</label>
+        <textarea asp-for="Form.Description"></textarea>
+    </div>
+    <div>
+        <label>Adres</label>
+        <textarea asp-for="Form.BusinessAddress"></textarea>
+    </div>
+    <div>
+        <label>Vergi No</label>
+        <input asp-for="Form.TaxNumber" />
+    </div>
+    <button type="submit">Gönder</button>
+</form>
+
+
