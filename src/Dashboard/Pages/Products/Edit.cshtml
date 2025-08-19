@@ -1,0 +1,314 @@
+@page
+@model Dashboard.Pages.Products.EditModel
+@{
+	ViewData["Title"] = "Ürün Düzenle";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+	<h2>Ürün Düzenle: @Model.Product?.Name</h2>
+	<a class="btn btn-outline-secondary" asp-page="/Products/Index">← Geri</a>
+</div>
+
+@if (TempData["Success"] is string s)
+{
+	<div class="alert alert-success">@s</div>
+}
+@if (TempData["Error"] is string e)
+{
+	<div class="alert alert-danger">@e</div>
+}
+
+<ul class="nav nav-tabs mb-3" id="productTabs" role="tablist">
+	<li class="nav-item" role="presentation">
+		<button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">Temel Bilgiler</button>
+	</li>
+	<li class="nav-item" role="presentation">
+		<button class="nav-link" id="variants-tab" data-bs-toggle="tab" data-bs-target="#variants" type="button" role="tab">Varyantlar</button>
+	</li>
+	<li class="nav-item" role="presentation">
+		<button class="nav-link" id="images-tab" data-bs-toggle="tab" data-bs-target="#images" type="button" role="tab">Resimler</button>
+	</li>
+</ul>
+
+<div class="tab-content" id="productTabsContent">
+	<!-- Temel Bilgiler Tab -->
+	<div class="tab-pane fade show active" id="basic" role="tabpanel">
+		<form method="post" class="card">
+			<div class="card-body">
+				<div class="row g-3">
+					<div class="col-md-6">
+						<label class="form-label">Ad</label>
+						<input class="form-control" asp-for="Input.Name" />
+					</div>
+					<div class="col-md-3">
+						<label class="form-label">Kategori ID</label>
+						<input class="form-control" asp-for="Input.CategoryId" />
+					</div>
+					<div class="col-md-3">
+						<label class="form-label">Fiyat</label>
+						<input class="form-control" asp-for="Input.Price" />
+					</div>
+					<div class="col-md-6">
+						<label class="form-label">Karşılaştırma Fiyatı</label>
+						<input class="form-control" asp-for="Input.CompareAtPrice" />
+					</div>
+					<div class="col-md-3">
+						<label class="form-label">Para Birimi</label>
+						<input class="form-control" asp-for="Input.Currency" />
+					</div>
+					<div class="col-md-3">
+						<label class="form-label">Stok</label>
+						<input class="form-control" asp-for="Input.StockQty" />
+					</div>
+					<div class="col-md-12">
+						<label class="form-label">Kısa Açıklama</label>
+						<textarea class="form-control" asp-for="Input.ShortDescription" rows="2"></textarea>
+					</div>
+					<div class="col-md-12">
+						<label class="form-label">Açıklama</label>
+						<textarea class="form-control" asp-for="Input.Description" rows="4"></textarea>
+					</div>
+					<div class="col-md-2">
+						<label class="form-label">Min Sipariş</label>
+						<input class="form-control" asp-for="Input.MinOrderQty" />
+					</div>
+					<div class="col-md-2">
+						<label class="form-label">Max Sipariş</label>
+						<input class="form-control" asp-for="Input.MaxOrderQty" />
+					</div>
+					<div class="col-md-2">
+						<label class="form-label">Ağırlık (gr)</label>
+						<input class="form-control" asp-for="Input.Weight" />
+					</div>
+					<div class="col-md-2 form-check">
+						<input class="form-check-input" type="checkbox" asp-for="Input.IsActive" />
+						<label class="form-check-label">Aktif</label>
+					</div>
+					<div class="col-md-2 form-check">
+						<input class="form-check-input" type="checkbox" asp-for="Input.IsPublished" />
+						<label class="form-check-label">Yayınla</label>
+					</div>
+					<div class="col-md-2 form-check">
+						<input class="form-check-input" type="checkbox" asp-for="Input.IsFeatured" />
+						<label class="form-check-label">Öne Çıkar</label>
+					</div>
+					<div class="col-md-4">
+						<label class="form-label">Meta Title</label>
+						<input class="form-control" asp-for="Input.MetaTitle" />
+					</div>
+					<div class="col-md-4">
+						<label class="form-label">Meta Keywords</label>
+						<input class="form-control" asp-for="Input.MetaKeywords" />
+					</div>
+					<div class="col-md-4">
+						<label class="form-label">Meta Description</label>
+						<textarea class="form-control" asp-for="Input.MetaDescription" rows="2"></textarea>
+					</div>
+				</div>
+			</div>
+			<div class="card-footer d-flex justify-content-end gap-2">
+				<button class="btn btn-primary" type="submit">Güncelle</button>
+			</div>
+		</form>
+	</div>
+
+	<!-- Varyantlar Tab -->
+	<div class="tab-pane fade" id="variants" role="tabpanel">
+		<div class="card">
+			<div class="card-header d-flex justify-content-between align-items-center">
+				<h5 class="mb-0">Ürün Varyantları</h5>
+				<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addVariantModal">+ Varyant Ekle</button>
+			</div>
+			<div class="card-body">
+				@if (Model.Variants.Any())
+				{
+					<div class="table-responsive">
+						<table class="table table-striped">
+							<thead>
+								<tr>
+									<th>SKU</th>
+									<th>Ad</th>
+									<th>Fiyat</th>
+									<th>Stok</th>
+									<th>Varsayılan</th>
+									<th>Durum</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var variant in Model.Variants)
+								{
+									<tr>
+										<td>@variant.Sku</td>
+										<td>@variant.VariantName</td>
+										<td>@variant.Price.ToString("N2") TRY</td>
+										<td>@variant.StockQty</td>
+										<td>
+											<span class="badge @(variant.IsDefault ? "bg-success" : "bg-secondary")">
+												@(variant.IsDefault ? "Evet" : "Hayır")
+											</span>
+										</td>
+										<td>
+											<span class="badge @(variant.IsActive ? "bg-success" : "bg-danger")">
+												@(variant.IsActive ? "Aktif" : "Pasif")
+											</span>
+										</td>
+										<td>
+											<button class="btn btn-sm btn-outline-primary">Düzenle</button>
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				}
+				else
+				{
+					<div class="text-center text-muted py-4">
+						<p>Henüz varyant eklenmemiş.</p>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+
+	<!-- Resimler Tab -->
+	<div class="tab-pane fade" id="images" role="tabpanel">
+		<div class="card">
+			<div class="card-header d-flex justify-content-between align-items-center">
+				<h5 class="mb-0">Ürün Resimleri</h5>
+				<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addImageModal">+ Resim Ekle</button>
+			</div>
+			<div class="card-body">
+				@if (Model.Images.Any())
+				{
+					<div class="row g-3">
+						@foreach (var image in Model.Images.OrderBy(i => i.DisplayOrder))
+						{
+							<div class="col-md-3">
+								<div class="card">
+									<img src="@image.ImageUrl" class="card-img-top" alt="@image.AltText" style="height: 150px; object-fit: cover;">
+									<div class="card-body">
+										<div class="d-flex justify-content-between align-items-start mb-2">
+											<span class="badge @(image.IsPrimary ? "bg-primary" : "bg-secondary")">
+												@(image.IsPrimary ? "Ana Resim" : "İkincil")
+											</span>
+											<span class="badge @(image.IsActive ? "bg-success" : "bg-danger")">
+												@(image.IsActive ? "Aktif" : "Pasif")
+											</span>
+										</div>
+										<p class="card-text small">@image.Title</p>
+										<div class="btn-group btn-group-sm w-100">
+											<button class="btn btn-outline-primary">Düzenle</button>
+											<button class="btn btn-outline-danger">Sil</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						}
+					</div>
+				}
+				else
+				{
+					<div class="text-center text-muted py-4">
+						<p>Henüz resim eklenmemiş.</p>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Varyant Ekleme Modal -->
+<div class="modal fade" id="addVariantModal" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Yeni Varyant Ekle</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+			</div>
+			<div class="modal-body">
+				<form id="addVariantForm">
+					<div class="mb-3">
+						<label class="form-label">SKU</label>
+						<input type="text" class="form-control" name="sku" />
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Varyant Adı</label>
+						<input type="text" class="form-control" name="variantName" required />
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Fiyat</label>
+						<input type="number" class="form-control" name="price" step="0.01" required />
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Stok</label>
+						<input type="number" class="form-control" name="stockQty" required />
+					</div>
+					<div class="form-check">
+						<input class="form-check-input" type="checkbox" name="isDefault" />
+						<label class="form-check-label">Varsayılan Varyant</label>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+				<button type="button" class="btn btn-primary" onclick="addVariant()">Ekle</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Resim Ekleme Modal -->
+<div class="modal fade" id="addImageModal" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Yeni Resim Ekle</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+			</div>
+			<div class="modal-body">
+				<form id="addImageForm">
+					<div class="mb-3">
+						<label class="form-label">Resim URL</label>
+						<input type="url" class="form-control" name="imageUrl" required />
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Thumbnail URL</label>
+						<input type="url" class="form-control" name="thumbnailUrl" />
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Alt Text</label>
+						<input type="text" class="form-control" name="altText" />
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Başlık</label>
+						<input type="text" class="form-control" name="title" />
+					</div>
+					<div class="form-check">
+						<input class="form-check-input" type="checkbox" name="isPrimary" />
+						<label class="form-check-label">Ana Resim</label>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+				<button type="button" class="btn btn-primary" onclick="addImage()">Ekle</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+		function addVariant() {
+			// TODO: Implement variant addition
+			alert('Varyant ekleme özelliği yakında eklenecek');
+		}
+
+		function addImage() {
+			// TODO: Implement image addition
+			alert('Resim ekleme özelliği yakında eklenecek');
+		}
+	</script>
+}

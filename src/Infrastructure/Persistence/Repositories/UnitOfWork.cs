@@ -152,4 +152,8 @@ public sealed class StoreUnitOfWork : UnitOfWork, IStoreUnitOfWork
     public IRepository<AppUser> Users => AuditableRepository<AppUser>();
     public IRepository<StoreApplication> StoreApplications => AuditableRepository<StoreApplication>();
     public IRepository<Order> Orders => AuditableRepository<Order>();
+    public IRepository<Product> Products => AuditableRepository<Product>();
+    public IRepository<Category> Categories => AuditableRepository<Category>();
+    public IRepository<ProductVariant> ProductVariants => AuditableRepository<ProductVariant>();
+    public IRepository<ProductImage> ProductImages => AuditableRepository<ProductImage>();
 }

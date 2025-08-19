@@ -1,0 +1,59 @@
+@page
+@model Dashboard.Pages.Products.NewModel
+@{
+	ViewData["Title"] = "Yeni Ürün";
+}
+
+<h2>Yeni Ürün</h2>
+
+@if (TempData["Error"] is string e)
+{
+	<div class="alert alert-danger">@e</div>
+}
+
+<form method="post" class="card">
+	<div class="card-body">
+		<div class="row g-3">
+			<div class="col-md-6">
+				<label class="form-label">Ad</label>
+				<input class="form-control" asp-for="Input.Name" />
+			</div>
+			<div class="col-md-3">
+				<label class="form-label">Kategori ID</label>
+				<input class="form-control" asp-for="Input.CategoryId" />
+			</div>
+			<div class="col-md-3">
+				<label class="form-label">Fiyat</label>
+				<input class="form-control" asp-for="Input.Price" />
+			</div>
+			<div class="col-md-12">
+				<label class="form-label">Kısa Açıklama</label>
+				<textarea class="form-control" asp-for="Input.ShortDescription"></textarea>
+			</div>
+			<div class="col-md-12">
+				<label class="form-label">Açıklama</label>
+				<textarea class="form-control" asp-for="Input.Description"></textarea>
+			</div>
+			<div class="col-md-2">
+				<label class="form-label">Stok</label>
+				<input class="form-control" asp-for="Input.StockQty" />
+			</div>
+			<div class="col-md-2 form-check ms-2">
+				<input class="form-check-input" type="checkbox" asp-for="Input.IsActive" />
+				<label class="form-check-label">Aktif</label>
+			</div>
+			<div class="col-md-2 form-check">
+				<input class="form-check-input" type="checkbox" asp-for="Input.IsPublished" />
+				<label class="form-check-label">Yayınla</label>
+			</div>
+			<div class="col-md-2 form-check">
+				<input class="form-check-input" type="checkbox" asp-for="Input.IsFeatured" />
+				<label class="form-check-label">Öne Çıkar</label>
+			</div>
+		</div>
+	</div>
+	<div class="card-footer d-flex justify-content-end gap-2">
+		<a class="btn btn-outline-secondary" asp-page="/Products/Index">İptal</a>
+		<button class="btn btn-primary" type="submit">Kaydet</button>
+	</div>
+</form>

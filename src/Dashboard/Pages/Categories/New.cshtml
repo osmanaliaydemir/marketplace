@@ -1,0 +1,82 @@
+@page
+@model Dashboard.Pages.Categories.NewModel
+@{
+	ViewData["Title"] = "Yeni Kategori";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+	<h2>Yeni Kategori</h2>
+	<a class="btn btn-outline-secondary" asp-page="/Categories/Index">← Geri</a>
+</div>
+
+@if (TempData["Error"] is string e)
+{
+	<div class="alert alert-danger">@e</div>
+}
+
+<form method="post" class="card">
+	<div class="card-body">
+		<div class="row g-3">
+			<div class="col-md-6">
+				<label class="form-label">Kategori Adı <span class="text-danger">*</span></label>
+				<input class="form-control" asp-for="Input.Name" placeholder="Örn: Elektronik" />
+				<span asp-validation-for="Input.Name" class="text-danger"></span>
+			</div>
+			<div class="col-md-6">
+				<label class="form-label">Üst Kategori</label>
+				<select class="form-select" asp-for="Input.ParentId" asp-items="Model.ParentCategories">
+				</select>
+				<span asp-validation-for="Input.ParentId" class="text-danger"></span>
+			</div>
+			<div class="col-md-12">
+				<label class="form-label">Açıklama</label>
+				<textarea class="form-control" asp-for="Input.Description" rows="3" placeholder="Kategori hakkında kısa açıklama..."></textarea>
+				<span asp-validation-for="Input.Description" class="text-danger"></span>
+			</div>
+			<div class="col-md-6">
+				<label class="form-label">Resim URL</label>
+				<input class="form-control" asp-for="Input.ImageUrl" placeholder="https://example.com/image.jpg" />
+				<span asp-validation-for="Input.ImageUrl" class="text-danger"></span>
+				<div class="form-text">Kategori için görsel (opsiyonel)</div>
+			</div>
+			<div class="col-md-6">
+				<label class="form-label">İkon Sınıfı</label>
+				<input class="form-control" asp-for="Input.IconClass" placeholder="bi-phone, fas fa-laptop" />
+				<span asp-validation-for="Input.IconClass" class="text-danger"></span>
+				<div class="form-text">Bootstrap Icons veya Font Awesome sınıfı</div>
+			</div>
+			<div class="col-md-4">
+				<label class="form-label">Görünüm Sırası</label>
+				<input class="form-control" asp-for="Input.DisplayOrder" type="number" min="0" max="999" />
+				<span asp-validation-for="Input.DisplayOrder" class="text-danger"></span>
+				<div class="form-text">Düşük sayılar önce görünür</div>
+			</div>
+			<div class="col-md-4 form-check d-flex align-items-center">
+				<input class="form-check-input me-2" type="checkbox" asp-for="Input.IsActive" />
+				<label class="form-check-label">Aktif</label>
+			</div>
+			<div class="col-md-4 form-check d-flex align-items-center">
+				<input class="form-check-input me-2" type="checkbox" asp-for="Input.IsFeatured" />
+				<label class="form-check-label">Öne Çıkan</label>
+			</div>
+			<div class="col-md-6">
+				<label class="form-label">Meta Title</label>
+				<input class="form-control" asp-for="Input.MetaTitle" placeholder="SEO için meta başlık" />
+				<span asp-validation-for="Input.MetaTitle" class="text-danger"></span>
+			</div>
+			<div class="col-md-6">
+				<label class="form-label">Meta Description</label>
+				<textarea class="form-control" asp-for="Input.MetaDescription" rows="2" placeholder="SEO için meta açıklama"></textarea>
+				<span asp-validation-for="Input.MetaDescription" class="text-danger"></span>
+			</div>
+		</div>
+	</div>
+	<div class="card-footer d-flex justify-content-end gap-2">
+		<a class="btn btn-outline-secondary" asp-page="/Categories/Index">İptal</a>
+		<button class="btn btn-primary" type="submit">Kaydet</button>
+	</div>
+</form>
+
+@section Scripts {
+	<partial name="_ValidationScriptsPartial" />
+}

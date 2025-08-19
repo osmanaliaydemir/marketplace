@@ -1,0 +1,208 @@
+@page
+@model Dashboard.Pages.Categories.IndexModel
+@{
+	ViewData["Title"] = "Kategoriler";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+	<h2>Kategoriler</h2>
+	<a class="btn btn-primary" asp-page="/Categories/New">Yeni Kategori</a>
+</div>
+
+@if (TempData["Success"] is string s)
+{
+	<div class="alert alert-success">@s</div>
+}
+@if (TempData["Error"] is string e)
+{
+	<div class="alert alert-danger">@e</div>
+}
+
+<form method="get" class="card mb-3">
+	<div class="card-body row g-3">
+		<div class="col-md-4">
+			<label class="form-label">Arama</label>
+			<input class="form-control" name="SearchRequest.SearchTerm" value="@Model.SearchRequest.SearchTerm" placeholder="Kategori adı, açıklama..." />
+		</div>
+		<div class="col-md-2">
+			<label class="form-label">Durum</label>
+			<select class="form-select" name="SearchRequest.IsActive">
+				<option value="">Tümü</option>
+				<option value="true" selected="@(Model.SearchRequest.IsActive == true)">Aktif</option>
+				<option value="false" selected="@(Model.SearchRequest.IsActive == false)">Pasif</option>
+			</select>
+		</div>
+		<div class="col-md-2">
+			<label class="form-label">Öne Çıkan</label>
+			<select class="form-select" name="SearchRequest.IsFeatured">
+				<option value="">Tümü</option>
+				<option value="true" selected="@(Model.SearchRequest.IsFeatured == true)">Evet</option>
+				<option value="false" selected="@(Model.SearchRequest.IsFeatured == false)">Hayır</option>
+			</select>
+		</div>
+		<div class="col-md-2">
+			<label class="form-label">Sıralama</label>
+			<select class="form-select" name="SearchRequest.SortBy">
+				<option value="DisplayOrder" selected="@(Model.SearchRequest.SortBy == "DisplayOrder")">Görünüm Sırası</option>
+				<option value="Name" selected="@(Model.SearchRequest.SortBy == "Name")">Ad</option>
+				<option value="CreatedAt" selected="@(Model.SearchRequest.SortBy == "CreatedAt")">Oluşturma Tarihi</option>
+			</select>
+		</div>
+		<div class="col-md-2 d-flex align-items-end">
+			<button class="btn btn-outline-primary w-100" type="submit">Ara</button>
+		</div>
+	</div>
+</form>
+
+<div class="card">
+	<div class="table-responsive">
+		<table class="table table-striped align-middle mb-0">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Kategori</th>
+					<th>Üst Kategori</th>
+					<th>Ürün Sayısı</th>
+					<th>Alt Kategoriler</th>
+					<th class="text-center">Aktif</th>
+					<th class="text-center">Öne Çıkan</th>
+					<th class="text-center">Sıra</th>
+					<th class="text-end"></th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var category in Model.SearchResponse.Categories)
+				{
+					<tr>
+						<td>@category.Id</td>
+						<td>
+							<div class="d-flex align-items-center">
+								@if (!string.IsNullOrEmpty(category.ImageUrl))
+								{
+									<img src="@category.ImageUrl" width="40" height="40" class="rounded me-2" onerror="this.style.display='none'" />
+								}
+								<div>
+									<div class="fw-semibold">@category.Name</div>
+									<div class="text-muted small">@category.Slug</div>
+									@if (!string.IsNullOrEmpty(category.Description))
+									{
+										<div class="text-muted small">@(category.Description.Length > 50 ? category.Description.Substring(0, 50) + "..." : category.Description)</div>
+									}
+								</div>
+							</div>
+						</td>
+						<td>
+							@if (category.ParentId.HasValue)
+							{
+								<span class="badge bg-secondary">@category.ParentName</span>
+							}
+							else
+							{
+								<span class="badge bg-primary">Ana Kategori</span>
+							}
+						</td>
+						<td class="text-center">
+							<span class="badge bg-info">@category.ProductCount</span>
+						</td>
+						<td class="text-center">
+							@if (category.ChildrenCount > 0)
+							{
+								<span class="badge bg-success">@category.ChildrenCount</span>
+							}
+							else
+							{
+								<span class="text-muted">-</span>
+							}
+						</td>
+						<td class="text-center">
+							<form method="post" asp-page-handler="ToggleStatus">
+								<input type="hidden" name="id" value="@category.Id" />
+								<input type="hidden" name="isActive" value="@(!category.IsActive)" />
+								<input type="hidden" name="isFeatured" value="@category.IsFeatured" />
+								<button class="btn btn-sm @(category.IsActive ? "btn-success" : "btn-outline-secondary")" type="submit">@(category.IsActive ? "Aktif" : "Pasif")</button>
+							</form>
+						</td>
+						<td class="text-center">
+							<form method="post" asp-page-handler="ToggleStatus">
+								<input type="hidden" name="id" value="@category.Id" />
+								<input type="hidden" name="isActive" value="@category.IsActive" />
+								<input type="hidden" name="isFeatured" value="@(!category.IsFeatured)" />
+								<button class="btn btn-sm @(category.IsFeatured ? "btn-warning" : "btn-outline-secondary")" type="submit">@(category.IsFeatured ? "Öne Çıkan" : "Normal")</button>
+							</form>
+						</td>
+						<td class="text-center">
+							<span class="badge bg-secondary">@category.DisplayOrder</span>
+						</td>
+						<td class="text-end">
+							<div class="btn-group btn-group-sm">
+								<a class="btn btn-outline-primary" asp-page="/Categories/Edit" asp-route-id="@category.Id">Düzenle</a>
+								<button class="btn btn-outline-danger" onclick="confirmDelete(@category.Id, '@category.Name')">Sil</button>
+							</div>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+@if (Model.SearchResponse.TotalPages > 1)
+{
+	<nav aria-label="Kategori sayfaları" class="mt-3">
+		<ul class="pagination justify-content-center">
+			@if (Model.SearchResponse.Page > 1)
+			{
+				<li class="page-item">
+					<a class="page-link" asp-page="" asp-route-SearchRequest.Page="@(Model.SearchResponse.Page - 1)">Önceki</a>
+				</li>
+			}
+			
+			@for (int i = Math.Max(1, Model.SearchResponse.Page - 2); i <= Math.Min(Model.SearchResponse.TotalPages, Model.SearchResponse.Page + 2); i++)
+			{
+				<li class="page-item @(i == Model.SearchResponse.Page ? "active" : "")">
+					<a class="page-link" asp-page="" asp-route-SearchRequest.Page="@i">@i</a>
+				</li>
+			}
+			
+			@if (Model.SearchResponse.Page < Model.SearchResponse.TotalPages)
+			{
+				<li class="page-item">
+					<a class="page-link" asp-page="" asp-route-SearchRequest.Page="@(Model.SearchResponse.Page + 1)">Sonraki</a>
+				</li>
+			}
+		</ul>
+	</nav>
+}
+
+<!-- Silme Onay Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Kategori Sil</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+			</div>
+			<div class="modal-body">
+				<p><strong id="categoryName"></strong> kategorisini silmek istediğinizden emin misiniz?</p>
+				<p class="text-danger small">Bu işlem geri alınamaz ve kategoriye bağlı tüm ürünler etkilenebilir.</p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+				<form method="post" asp-page-handler="Delete" style="display: inline;">
+					<input type="hidden" name="id" id="deleteCategoryId" />
+					<button type="submit" class="btn btn-danger">Sil</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+		function confirmDelete(id, name) {
+			document.getElementById('deleteCategoryId').value = id;
+			document.getElementById('categoryName').textContent = name;
+			new bootstrap.Modal(document.getElementById('deleteModal')).show();
+		}
+	</script>
+}

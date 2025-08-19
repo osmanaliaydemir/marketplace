@@ -1,69 +1,275 @@
-## TODO - Marketplace (TR, Multi-Vendor)
+# 🚀 Marketplace TODO - Geliştirme Planı
 
-- [ ] API (Controllers, DTO, Validasyon)
-  - [ ] Customer: `ProductsController`, `CategoriesController`, `SearchController`
-  - [ ] Sepet: `CartController` (add/get/delete), çok satıcılı sepet
-  - [ ] Checkout: `CheckoutController` (session), `PaymentsController` (callback), `WebhooksController` (paytr)
-  - [ ] Orders: `OrdersController` (müşteri), `SellerOrdersController` (satıcı)
-  - [ ] Admin: `AdminSellersController` (onay/komisyon), `AdminRefundsController`, `ReportsController`
-  - [ ] DTO modelleri ve FluentValidation kuralları
-  - [ ] RFC7807: `ProblemDetailsMiddleware` -> correlation-id, error codes
-  - [ ] Swagger: tüm endpoint’lere örnek istek/yanıt, security scheme
+## 📊 Proje Durumu Analizi
 
+### ✅ **Tamamlanan (Completed)**
+- [x] Temel mimari (Clean Architecture, DDD)
+- [x] Entity'ler ve domain modelleri
+- [x] Repository pattern ve Unit of Work
+- [x] JWT authentication ve authorization
+- [x] Dashboard ve Web UI projeleri
+- [x] Store application workflow
+- [x] Temel API endpoints (Auth, Dashboard, StoreApplications, Stores)
+- [x] Dapper column mapping
+- [x] Bootstrap 5 entegrasyonu
+- [x] Database schema (temel tablolar)
+- [x] FluentValidation kurulumu
 
-- [ ] Ödeme Entegrasyonu - PayTR Marketplace
-  - [ ] `PaytrAdapter`: iFrame/Hosted init (token), HMAC doğrulama, refund, rapor çekme
-  - [ ] Konfigürasyon: `merchant_id`, `merchant_key`, `merchant_salt`, endpoint URL’leri (sandbox/production)
-  - [ ] `merchant_oid` üretimi ve sipariş/ödeme korelasyonu
-  - [ ] Idempotency: Redis SETNX + TTL (merchant_oid, webhook event id)
-  - [ ] Sandbox E2E: iFrame -> callback -> OK
+### 🚧 **Devam Eden (In Progress)**
+- [ ] API business logic implementasyonu
+- [ ] Validation kuralları
+- [ ] Error handling ve logging
 
-- [ ] Uygulama Servisleri
-  - [ ] `CheckoutService`: sepet -> sipariş -> `order_groups` -> PayTR init
-  - [ ] `OrderService`: sipariş/fulfillment/kargo güncellemeleri
-  - [ ] `PaymentService`: callback işleme, status geçişleri, refunds
-  - [ ] `LedgerService`: çift kayıt (Dr/Cr), yuvarlama/komisyon kuralları
-  - [ ] `payment_splits`: satıcı payı + platform komisyonu hesaplama kuralları
+---
 
+## 🎯 **ÖNCELİK 1: Temel İş Mantığı (Core Business Logic)**
 
-- [ ] Güvenlik
-  - [ ] JWT rol tabanlı yetki: `Customer`, `Seller`, `Admin` ve policy’ler
-  - [ ] CORS allowlist (Web Razor, Flutter mobil origin’leri)
-  - [ ] Rate Limiting profilleri (public, auth, webhook)
-  - [ ] Loglarda PII maskeleme (KVKK)
+### 1.1 **Ürün Yönetimi Sistemi**
+- [ ] `ProductsController` - CRUD operasyonları
+- [ ] `CategoriesController` - Kategori yönetimi
+- [ ] `ProductVariantsController` - Varyant yönetimi
+- [ ] `InventoryController` - Stok yönetimi
+- [ ] Ürün arama ve filtreleme
+- [ ] Ürün resim yükleme ve yönetimi
+- [ ] Ürün SEO (slug, meta description)
 
-- [ ] Ölçülebilirlik & Gözlemlenebilirlik
-  - [ ] Serilog yapılandırması (correlation-id, request logging)
-  - [ ] HealthChecks: SQL, Redis, (ops.) PayTR DNS/HTTP reachability
-  - [ ] Temel metrikler (istek sayısı/süreleri, hata oranı)
+### 1.2 **Sepet Sistemi (Multi-Vendor Cart)**
+- [ ] `CartController` - Sepet işlemleri
+- [ ] Çok satıcılı sepet yapısı
+- [ ] Sepet item ekleme/çıkarma/güncelleme
+- [ ] Sepet validation (stok kontrolü, fiyat güncelleme)
+- [ ] Sepet session yönetimi
+- [ ] Sepet temizleme ve süre sınırı
 
-- [ ] Cache & Idempotency (Redis)
-  - [ ] Ürün/kategori listeleme ve arama için caching (TTL)
-  - [ ] Callback idempotency anahtarları (merchant_oid/event)
+### 1.3 **Sipariş Yönetimi**
+- [ ] `OrdersController` - Müşteri siparişleri
+- [ ] `SellerOrdersController` - Satıcı siparişleri
+- [ ] `OrderGroupsController` - Satıcı bazlı sipariş grupları
+- [ ] Sipariş durumu yönetimi (Pending → Confirmed → Processing → Shipped → Delivered)
+- [ ] Sipariş geçmişi ve detayları
+- [ ] Sipariş iptal ve değişiklik
 
-- [ ] Arka Plan İşleri
-  - [ ] Outbox işlemcisi: domain event -> outbox -> publish/işle
-  - [ ] `PaytrReconciliationWorker`: günlük rapor çekme, payments/ledger eşleme, fark raporu
-  - [ ] Zamanlama ve retry/backoff stratejileri
+---
 
-- [ ] Testler
-  - [ ] Unit: `CheckoutService`, `PaymentService`, `LedgerService` için senaryolar
-  - [ ] Integration: PayTR callback HMAC + idempotency, ledger Dr/Cr tutarlılığı
-  - [ ] Refund senaryoları (tam/kısmi) ve ters kayıtlar
-  - [ ] Smoke: temel endpoint’ler 200/401/403 davranışları
+## 💳 **ÖNCELİK 2: Ödeme Sistemi (Payment System)**
 
-- [ ] DevOps
-  - [ ] Docker Compose: API + SQL Server + Redis (gerekirse seed)
-  - [ ] CI: restore/build/test; migration çalıştırma adımı
-  - [ ] Secrets yönetimi (User Secrets / ortam değişkenleri)
+### 2.1 **PayTR Marketplace Entegrasyonu**
+- [ ] `PaytrAdapter` implementasyonu
+- [ ] iFrame/Hosted ödeme başlatma
+- [ ] HMAC doğrulama
+- [ ] Callback işleme
+- [ ] Webhook entegrasyonu
+- [ ] Sandbox ve production konfigürasyonu
 
-- [ ] Dokümantasyon
-  - [ ] README: kurulum, migrate, geliştirme akışı, .env örnekleri
-  - [ ] Swagger açıklamaları: iFrame paramları, webhook örnek payload’ı
-  - [ ] İstemci entegrasyon notları (Razor, Flutter)
+### 2.2 **Ödeme İşlemleri**
+- [ ] `PaymentsController` - Ödeme yönetimi
+- [ ] `PaymentSplitsController` - Komisyon dağıtımı
+- [ ] Ödeme durumu takibi
+- [ ] Refund işlemleri
+- [ ] İade yönetimi
+- [ ] Ödeme raporları
 
-- [ ] Başarı Ölçütleri (DoD)
-  - [ ] iFrame ödeme -> callback "OK" -> `orders/payments/ledger` tutarlı
-  - [ ] Satıcı paneli: sipariş/kargo/rapor ekranları çalışır
-  - [ ] Admin: satıcı onay/komisyon/iadeler yönetilebilir
-  - [ ] Swagger tam ve güncel
+### 2.3 **Checkout Sistemi**
+- [ ] `CheckoutController` - Ödeme akışı
+- [ ] Adres yönetimi
+- [ ] Kargo seçenekleri
+- [ ] Fiyat hesaplama (ürün + kargo + vergi)
+- [ ] Ödeme öncesi validation
+- [ ] Sipariş onayı
+
+---
+
+## 🏪 **ÖNCELİK 3: Mağaza ve Satıcı Yönetimi**
+
+### 3.1 **Mağaza Profil Yönetimi**
+- [ ] Mağaza bilgi güncelleme
+- [ ] Logo ve banner yönetimi
+- [ ] Mağaza ayarları
+- [ ] İletişim bilgileri
+- [ ] Çalışma saatleri
+- [ ] Kargo politikaları
+
+### 3.2 **Satıcı Dashboard**
+- [ ] Satıcı ana sayfası
+- [ ] Ürün yönetimi ekranı
+- [ ] Sipariş yönetimi
+- [ ] Stok takibi
+- [ ] Satış raporları
+- [ ] Komisyon raporları
+
+### 3.3 **Admin Panel Geliştirmeleri**
+- [ ] Satıcı onay/red sistemi
+- [ ] Komisyon oranı yönetimi
+- [ ] Platform ayarları
+- [ ] Kullanıcı yönetimi
+- [ ] Sistem raporları
+- [ ] Log yönetimi
+
+---
+
+## 🔐 **ÖNCELİK 4: Güvenlik ve Performans**
+
+### 4.1 **Güvenlik Geliştirmeleri**
+- [ ] Role-based access control (RBAC)
+- [ ] API rate limiting
+- [ ] CORS policy yapılandırması
+- [ ] Input validation ve sanitization
+- [ ] SQL injection koruması
+- [ ] XSS koruması
+
+### 4.2 **Performance Optimizasyonu**
+- [ ] Redis caching implementasyonu
+- [ ] Database query optimization
+- [ ] API response compression
+- [ ] Image optimization
+- [ ] Lazy loading
+- [ ] Connection pooling
+
+---
+
+## 📱 **ÖNCELİK 5: Kullanıcı Deneyimi**
+
+### 5.1 **Web UI Geliştirmeleri**
+- [ ] Ürün listeleme sayfası
+- [ ] Ürün detay sayfası
+- [ ] Kategori sayfaları
+- [ ] Arama sonuçları
+- [ ] Kullanıcı profil sayfası
+- [ ] Sipariş takip sayfası
+
+### 5.2 **Dashboard UI Geliştirmeleri**
+- [ ] Responsive tasarım
+- [ ] Dark/Light tema
+- [ ] Dashboard widgets
+- [ ] Chart ve grafikler
+- [ ] Export fonksiyonları
+- [ ] Bulk işlemler
+
+---
+
+## 🧪 **ÖNCELİK 6: Test ve Kalite**
+
+### 6.1 **Unit Tests**
+- [ ] Domain entity tests
+- [ ] Service layer tests
+- [ ] Repository tests
+- [ ] Controller tests
+- [ ] Validation tests
+
+### 6.2 **Integration Tests**
+- [ ] API endpoint tests
+- [ ] Database integration tests
+- [ ] Payment flow tests
+- [ ] Authentication tests
+
+### 6.3 **End-to-End Tests**
+- [ ] User registration flow
+- [ ] Product purchase flow
+- [ ] Store application flow
+- [ ] Admin approval flow
+
+---
+
+## 🚀 **ÖNCELİK 7: DevOps ve Deployment**
+
+### 7.1 **CI/CD Pipeline**
+- [ ] GitHub Actions workflow
+- [ ] Automated testing
+- [ ] Build automation
+- [ ] Deployment automation
+- [ ] Environment management
+
+### 7.2 **Docker ve Containerization**
+- [ ] API containerization
+- [ ] Database containerization
+- [ ] Redis containerization
+- [ ] Docker Compose setup
+- [ ] Production deployment
+
+### 7.3 **Monitoring ve Logging**
+- [ ] Application insights
+- [ ] Error tracking
+- [ ] Performance monitoring
+- [ ] Health checks
+- [ ] Alerting system
+
+---
+
+## 📚 **ÖNCELİK 8: Dokümantasyon**
+
+### 8.1 **API Dokümantasyonu**
+- [ ] Swagger/OpenAPI geliştirmeleri
+- [ ] Endpoint açıklamaları
+- [ ] Request/Response örnekleri
+- [ ] Error code dokümantasyonu
+- [ ] Authentication guide
+
+### 8.2 **Geliştirici Dokümantasyonu**
+- [ ] Setup guide
+- [ ] Architecture documentation
+- [ ] Database schema documentation
+- [ ] API integration guide
+- [ ] Troubleshooting guide
+
+---
+
+## 🎯 **Başarı Kriterleri (Definition of Done)**
+
+### ✅ **Temel Fonksiyonalite**
+- [ ] Kullanıcı kayıt ve giriş yapabilir
+- [ ] Mağaza başvurusu yapılabilir ve onaylanabilir
+- [ ] Ürün eklenebilir ve listelenebilir
+- [ ] Sepete ürün eklenebilir
+- [ ] Sipariş verilebilir ve ödeme yapılabilir
+- [ ] Admin paneli çalışır durumda
+
+### ✅ **Teknik Gereksinimler**
+- [ ] Tüm API endpoint'ler çalışır
+- [ ] Database migration'lar başarılı
+- [ ] Unit test coverage > 80%
+- [ ] Integration test'ler başarılı
+- [ ] Performance test'ler geçer
+- [ ] Security test'ler geçer
+
+### ✅ **Deployment**
+- [ ] Production environment'da çalışır
+- [ ] CI/CD pipeline aktif
+- [ ] Monitoring ve logging çalışır
+- [ ] Backup ve recovery planı hazır
+- [ ] Documentation güncel
+
+---
+
+## 📅 **Tahmini Zaman Çizelgesi**
+
+- **Faz 1 (2-3 hafta)**: Temel iş mantığı
+- **Faz 2 (2-3 hafta)**: Ödeme sistemi
+- **Faz 3 (1-2 hafta)**: UI geliştirmeleri
+- **Faz 4 (1-2 hafta)**: Test ve optimizasyon
+- **Faz 5 (1 hafta)**: Deployment ve dokümantasyon
+
+**Toplam Tahmini Süre: 7-11 hafta**
+
+---
+
+## 🚨 **Risk Faktörleri**
+
+- **PayTR Entegrasyonu**: API dokümantasyonu ve test ortamı
+- **Performance**: Büyük veri setlerinde performans
+- **Security**: Ödeme güvenliği ve veri koruma
+- **Scalability**: Yüksek trafik durumunda sistem performansı
+
+---
+
+## 💡 **Öneriler**
+
+1. **MVP Yaklaşımı**: Önce temel fonksiyonaliteyi tamamla
+2. **Incremental Development**: Küçük parçalar halinde geliştir
+3. **User Feedback**: Erken aşamada kullanıcı geri bildirimi al
+4. **Code Review**: Her PR'da code review yap
+5. **Documentation**: Kod yazarken dokümantasyonu da güncelle
+
+---
+
+*Son Güncelleme: $(Get-Date -Format "dd.MM.yyyy HH:mm")*
+*Proje Durumu: %25 Tamamlandı*

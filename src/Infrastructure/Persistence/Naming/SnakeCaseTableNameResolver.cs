@@ -7,6 +7,7 @@ public sealed class SnakeCaseTableNameResolver : ITableNameResolver
 	private static readonly Dictionary<string, string> ExplicitNames = new(StringComparer.OrdinalIgnoreCase)
 	{
 		{ "AppUser", "app_users" },
+		{ "Category", "categories" },
 		{ "StoreCategory", "store_categories" },
 		{ "OrderGroup", "order_groups" },
 		{ "OrderItem", "order_items" },

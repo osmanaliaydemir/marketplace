@@ -22,4 +22,8 @@ public interface IStoreUnitOfWork : IUnitOfWork
     IRepository<AppUser> Users { get; }
     IRepository<StoreApplication> StoreApplications { get; }
     IRepository<Order> Orders { get; }
+    IRepository<Product> Products { get; }
+    IRepository<Category> Categories { get; }
+    IRepository<ProductVariant> ProductVariants { get; }
+    IRepository<ProductImage> ProductImages { get; }
 }
