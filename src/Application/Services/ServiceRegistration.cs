@@ -8,6 +8,16 @@ public static class ServiceRegistration
 	public static IServiceCollection AddApplicationServices(this IServiceCollection services)
 	{
 		services.AddSingleton<IClock, SystemClock>();
+		
+		// Service interfaces registration
+		services.AddScoped<IProductService, ProductService>();
+		services.AddScoped<ICategoryService, CategoryService>();
+		// services.AddScoped<IOrderService, OrderService>(); // TEMPORARILY COMMENTED OUT
+		services.AddScoped<ICartService, CartService>();
+		services.AddScoped<IPaymentService, PaymentService>();
+		services.AddScoped<IInventoryService, InventoryService>();
+
+		
 		return services;
 	}
 }

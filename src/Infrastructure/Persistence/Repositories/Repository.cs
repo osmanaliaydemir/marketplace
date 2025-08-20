@@ -4,6 +4,7 @@ using Infrastructure.Persistence.Context;
 using Domain.Models;
 using Microsoft.Extensions.Logging;
 using Infrastructure.Persistence.Naming;
+using Application.Abstractions;
 
 namespace Infrastructure.Persistence.Repositories;
 

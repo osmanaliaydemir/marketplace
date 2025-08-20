@@ -1,32 +1,34 @@
 using Infrastructure.Persistence;
-using Infrastructure.Persistence.Context;
-using Infrastructure.Persistence.Naming;
-using Infrastructure.Persistence.Repositories;
-using Infrastructure.Services;
+using Infrastructure.Payments;
+using Infrastructure.Caching;
+using Infrastructure.Logging;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Dapper;
+using StackExchange.Redis;
 
 namespace Infrastructure;
 
 public static class InfrastructureRegistration
 {
-	public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+	public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
 	{
-		// Dapper column mapping - snake_case to PascalCase
-		DefaultTypeMap.MatchNamesWithUnderscores = true;
-		
 		// Persistence
-		services.AddScoped<IDbContext, DbContext>();
-		services.AddScoped<ISqlConnectionFactory, SqlConnectionFactory>();
-		services.AddScoped<ITableNameResolver, SnakeCaseTableNameResolver>();
-		services.AddScoped<IColumnNameResolver, SnakeCaseColumnNameResolver>();
+		services.AddPersistence(configuration);
 		
-		// Unit of Work
-		services.AddScoped<IUnitOfWork, UnitOfWork>();
-		services.AddScoped<IStoreUnitOfWork, StoreUnitOfWork>();
+		// Payments
+		services.AddScoped<IPaymentProvider, PaytrAdapter>();
+		services.AddHttpClient<PaytrAdapter>();
 		
-		// Services
-		services.AddScoped<StoreApplicationService>();
+		// Caching
+		services.AddSingleton<IConnectionMultiplexer>(provider =>
+		{
+			var connectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+			return ConnectionMultiplexer.Connect(connectionString);
+		});
+		services.AddScoped<ICacheService, RedisCacheService>();
+		
+		// Logging
+		services.AddLogging();
 		
 		return services;
 	}

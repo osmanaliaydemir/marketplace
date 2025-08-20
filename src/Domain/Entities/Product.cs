@@ -9,6 +9,7 @@ public sealed class Product : Domain.Models.AuditableEntity
     public long? StoreCategoryId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
+    public string Sku { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? ShortDescription { get; set; }
     public decimal Price { get; set; }
@@ -18,6 +19,7 @@ public sealed class Product : Domain.Models.AuditableEntity
     public bool IsActive { get; set; } = true;
     public bool IsFeatured { get; set; } = false; // Öne çıkan ürün
     public bool IsPublished { get; set; } = true; // Yayınlanmış mı
+    public int DisplayOrder { get; set; } = 0; // Görüntüleme sırası
     public int Weight { get; set; } = 0; // Gram cinsinden
     public int? MinOrderQty { get; set; } = 1; // Minimum sipariş miktarı
     public int? MaxOrderQty { get; set; } // Maksimum sipariş miktarı

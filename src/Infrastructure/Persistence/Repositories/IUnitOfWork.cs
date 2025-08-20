@@ -1,5 +1,6 @@
 using System.Data;
 using Domain.Entities;
+using Application.Abstractions;
 
 namespace Infrastructure.Persistence.Repositories;
 

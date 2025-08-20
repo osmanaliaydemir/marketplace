@@ -1,6 +1,6 @@
 using Domain.Models;
 
-namespace Infrastructure.Persistence.Repositories;
+namespace Application.Abstractions;
 
 public interface IRepository<TEntity> where TEntity : class, IEntity
 {

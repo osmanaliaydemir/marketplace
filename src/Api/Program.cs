@@ -3,6 +3,7 @@ using Api.Configuration;
 using Application.Services;
 using Application.Validation;
 using Infrastructure;
+using Infrastructure.Logging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Dapper;
@@ -14,15 +15,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Dapper column mapping - snake_case to PascalCase
 DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-builder.Host.UseSerilog((ctx, lc) => lc
-    .ReadFrom.Configuration(ctx.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console());
+// Serilog Configuration
+builder.Host.UseSerilogConfiguration();
 
 builder.Services.AddControllers();
 
 // FluentValidation'ı ekle
-builder.Services.AddValidatorsFromAssemblyContaining<Api.Validators.CreateCategoryRequestValidator>();
+builder.Services.AddApplicationValidation();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -52,14 +51,14 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// Services
 builder.Services.AddAuthNAuthZ(builder.Configuration);
 builder.Services.AddBasicRateLimiting();
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddCaching(builder.Configuration);
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddApplicationServices();
-builder.Services.AddValidation();
-builder.Services.AddInfrastructure();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
