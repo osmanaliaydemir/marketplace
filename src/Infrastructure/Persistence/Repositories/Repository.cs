@@ -16,13 +16,34 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 	protected readonly string _idColumn;
 	private readonly IColumnNameResolver _columnNameResolver;
 
-	public Repository(IDbContext dbContext, ILogger logger, ITableNameResolver tableNameResolver, IColumnNameResolver columnNameResolver)
+	public Repository(IDbContext dbContext, ILogger logger, ITableNameResolver? tableNameResolver, IColumnNameResolver? columnNameResolver)
 	{
 		_dbContext = dbContext;
 		_logger = logger;
-		_tableName = tableNameResolver.ResolveTableName(typeof(TEntity));
-		_idColumn = columnNameResolver.ResolveIdColumnName(typeof(TEntity));
-		_columnNameResolver = columnNameResolver;
+		
+		// Null-safe fallback for table name resolution
+		if (tableNameResolver != null)
+		{
+			_tableName = tableNameResolver.ResolveTableName(typeof(TEntity));
+		}
+		else
+		{
+			// Fallback: Use entity name with 's' suffix
+			_tableName = typeof(TEntity).Name + "s";
+		}
+		
+		// Null-safe fallback for column name resolution  
+		if (columnNameResolver != null)
+		{
+			_idColumn = columnNameResolver.ResolveIdColumnName(typeof(TEntity));
+			_columnNameResolver = columnNameResolver;
+		}
+		else
+		{
+			// Fallback: Use 'Id' as default
+			_idColumn = "Id";
+			_columnNameResolver = new DefaultColumnNameResolver();
+		}
 	}
 
 	#region Query Operations

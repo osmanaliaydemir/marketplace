@@ -17,6 +17,7 @@ public static class InfrastructureRegistration
 		
 		// Payments
 		services.AddScoped<IPaymentProvider, PaytrAdapter>();
+		services.AddScoped<Application.Abstractions.IPaymentProvider, PaymentProvider>();
 		services.AddHttpClient<PaytrAdapter>();
 		
 		// Caching

@@ -1,6 +1,6 @@
 namespace Application.DTOs.Payments;
 
-public sealed record PaymentRequest
+public record PaymentRequest
 {
     public string PaymentId { get; init; } = string.Empty;
     public decimal Amount { get; init; }

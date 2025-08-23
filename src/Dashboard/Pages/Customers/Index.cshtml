@@ -1,0 +1,236 @@
+@page
+@model Dashboard.Pages.Customers.IndexModel
+@{
+    ViewData["Title"] = "Müşteriler";
+    Layout = "_Layout";
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2 text-primary">
+        <i class="bi bi-people me-2"></i>
+        Müşteriler
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-search me-1"></i>
+                Ara
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-download me-1"></i>
+                Export
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card card h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Toplam Müşteri
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalCustomers.ToString("N0")</div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="stats-icon bg-gradient-primary">
+                            <i class="bi bi-people"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card card h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Aktif Müşteri
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ActiveCustomers.ToString("N0")</div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="stats-icon bg-gradient-success">
+                            <i class="bi bi-person-check"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card card h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Bu Ay Yeni
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.NewThisMonth</div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="stats-icon bg-gradient-info">
+                            <i class="bi bi-person-plus"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card card h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Ortalama Sipariş
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">₺@Model.AverageOrderValue.ToString("N0")</div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="stats-icon bg-gradient-warning">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Customers Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card stats-card">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h5 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-list-ul me-2"></i>
+                    Müşteri Listesi
+                </h5>
+                <div class="d-flex gap-2">
+                    <div class="input-group input-group-sm" style="width: 250px;">
+                        <input type="text" class="form-control" placeholder="Müşteri ara...">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <select class="form-select form-select-sm" style="width: auto;">
+                        <option>Tümü</option>
+                        <option>Aktif</option>
+                        <option>Pasif</option>
+                        <option>VIP</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="border-0">Müşteri</th>
+                                <th class="border-0">Email</th>
+                                <th class="border-0">Telefon</th>
+                                <th class="border-0">Sipariş Sayısı</th>
+                                <th class="border-0">Toplam Harcama</th>
+                                <th class="border-0">Son Sipariş</th>
+                                <th class="border-0">Durum</th>
+                                <th class="border-0">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var customer in Model.Customers)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                    @customer.FullName.Substring(0, 1).ToUpper()
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">@customer.FullName</div>
+                                                <small class="text-muted">Müşteri #@customer.Id</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@customer.Email</td>
+                                    <td>@customer.Phone</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">@customer.OrderCount</span>
+                                    </td>
+                                    <td class="fw-bold">₺@customer.TotalSpent.ToString("N2")</td>
+                                    <td>
+                                        @if (customer.LastOrderDate.HasValue)
+                                        {
+                                            @customer.LastOrderDate.Value.ToString("dd.MM.yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-@customer.StatusColor">@customer.Status</span>
+                                        @if (customer.IsVip)
+                                        {
+                                            <span class="badge bg-warning ms-1">VIP</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" title="Profil">
+                                                <i class="bi bi-person"></i>
+                                            </button>
+                                            <button class="btn btn-outline-secondary" title="Siparişler">
+                                                <i class="bi bi-cart"></i>
+                                            </button>
+                                            <button class="btn btn-outline-info" title="Mesaj Gönder">
+                                                <i class="bi bi-envelope"></i>
+                                            </button>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                                    <i class="bi bi-three-dots"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Düzenle</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-star me-2"></i>VIP Yap</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Sil</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Toplam @Model.TotalCustomers müşteri</small>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item"><a class="page-link" href="#">Önceki</a></li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item"><a class="page-link" href="#">Sonraki</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

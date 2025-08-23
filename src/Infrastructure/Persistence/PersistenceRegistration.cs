@@ -1,10 +1,12 @@
+using Application.Abstractions;
+using Application.Services;
+using Dapper;
 using Infrastructure.Persistence.Context;
 using Infrastructure.Persistence.Naming;
 using Infrastructure.Persistence.Repositories;
 using Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Dapper;
 
 namespace Infrastructure.Persistence;
 
@@ -28,15 +30,17 @@ public static class PersistenceRegistration
 		services.AddScoped<IStoreUnitOfWork, StoreUnitOfWork>();
 		
 		// Repositories
-		services.AddScoped<Application.Abstractions.IProductRepository, ProductRepository>();
-		services.AddScoped<Application.Abstractions.ICategoryRepository, CategoryRepository>();
-		services.AddScoped<Application.Abstractions.IOrderRepository, OrderRepository>();
-		services.AddScoped<Application.Abstractions.ICustomerRepository, CustomerRepository>();
-		services.AddScoped<Application.Abstractions.IPaymentRepository, PaymentRepository>();
-		services.AddScoped<Application.Abstractions.IInventoryRepository, InventoryRepository>(); // EKLENDI!
-		services.AddScoped<Application.Abstractions.ISellerRepository, SellerRepository>(); // EKLENDI!
-		services.AddScoped<Application.Abstractions.IStoreRepository, StoreRepository>(); // EKLENDI!
-		services.AddScoped<Application.Abstractions.ICartRepository, CartRepository>(); // EKLENDI!
+		services.AddScoped<IProductRepository, ProductRepository>();
+		services.AddScoped<ICategoryRepository, CategoryRepository>();
+		services.AddScoped<IOrderRepository, OrderRepository>();
+		services.AddScoped<ICustomerRepository, CustomerRepository>();
+		services.AddScoped<IPaymentRepository, PaymentRepository>();
+		services.AddScoped<IInventoryRepository, InventoryRepository>();
+		services.AddScoped<ISellerRepository, SellerRepository>();
+		services.AddScoped<IStoreRepository, StoreRepository>();
+		services.AddScoped<ICartRepository, CartRepository>();
+		services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+		services.AddScoped<IOrderService, OrderService>();
 		
 		// Services
 		services.AddScoped<StoreApplicationService>();

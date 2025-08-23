@@ -1,3 +1,8 @@
 ﻿@{
-    Layout = "_Layout";
+    // Login sayfası hariç diğer tüm sayfalarda layout kullan
+    var pageName = ViewContext.RouteData.Values["page"]?.ToString();
+    if (pageName != "/Login")
+    {
+        Layout = "_Layout";
+    }
 }
