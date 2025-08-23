@@ -33,6 +33,10 @@ public static class PersistenceRegistration
 		services.AddScoped<Application.Abstractions.IOrderRepository, OrderRepository>();
 		services.AddScoped<Application.Abstractions.ICustomerRepository, CustomerRepository>();
 		services.AddScoped<Application.Abstractions.IPaymentRepository, PaymentRepository>();
+		services.AddScoped<Application.Abstractions.IInventoryRepository, InventoryRepository>(); // EKLENDI!
+		services.AddScoped<Application.Abstractions.ISellerRepository, SellerRepository>(); // EKLENDI!
+		services.AddScoped<Application.Abstractions.IStoreRepository, StoreRepository>(); // EKLENDI!
+		services.AddScoped<Application.Abstractions.ICartRepository, CartRepository>(); // EKLENDI!
 		
 		// Services
 		services.AddScoped<StoreApplicationService>();

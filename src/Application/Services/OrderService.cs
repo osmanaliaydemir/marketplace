@@ -1,6 +1,7 @@
 using Application.Abstractions;
 using Application.DTOs.Orders;
 using Domain.Entities;
+using Domain.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Services;
@@ -62,7 +63,7 @@ public sealed class OrderService : IOrderService
                 CustomerId = request.CustomerId,
                 StoreId = request.StoreId,
                 Status = OrderStatus.Pending,
-                SubTotal = request.SubTotal,
+                Subtotal = request.SubTotal,
                 TaxAmount = request.TaxAmount,
                 ShippingAmount = request.ShippingAmount,
                 DiscountAmount = request.DiscountAmount,
@@ -102,17 +103,8 @@ public sealed class OrderService : IOrderService
             if (request.Notes != null)
                 order.Notes = request.Notes;
             
-            if (request.ShippingAddress != null)
-                order.ShippingAddress = request.ShippingAddress;
-            
-            if (request.BillingAddress != null)
-                order.BillingAddress = request.BillingAddress;
-            
-            if (request.Phone != null)
-                order.Phone = request.Phone;
-            
-            if (request.Email != null)
-                order.Email = request.Email;
+            if (request.Notes != null)
+                order.Notes = request.Notes;
 
             order.ModifiedAt = DateTime.UtcNow;
             
@@ -309,7 +301,7 @@ public sealed class OrderService : IOrderService
         }
     }
 
-    public async Task<bool> UpdateStatusAsync(long id, string status, string? note = null)
+    public async Task<bool> UpdateStatusAsync(long id, OrderStatus status, string? note = null)
     {
         _logger.LogInformation("Updating order status: OrderId: {OrderId}, Status: {Status}", id, status);
         
@@ -323,26 +315,26 @@ public sealed class OrderService : IOrderService
             }
 
             // Validate status transition
-            if (!IsValidStatusTransition(order.Status.ToString(), status))
+            if (!IsValidStatusTransition(order.Status, status))
             {
                 _logger.LogWarning("Invalid status transition from {CurrentStatus} to {NewStatus}: {OrderId}", 
                     order.Status, status, id);
                 return false;
             }
 
-            order.Status = Enum.Parse<OrderStatus>(status);
+            order.Status = status;
             order.ModifiedAt = DateTime.UtcNow;
             
             // Update status-specific timestamps
-            switch (status.ToLower())
+            switch (status)
             {
-                case "shipped":
+                case OrderStatus.Shipped:
                     order.ShippedAt = DateTime.UtcNow;
                     break;
-                case "delivered":
+                case OrderStatus.Delivered:
                     order.DeliveredAt = DateTime.UtcNow;
                     break;
-                case "cancelled":
+                case OrderStatus.Cancelled:
                     order.CancelledAt = DateTime.UtcNow;
                     break;
             }
@@ -363,12 +355,12 @@ public sealed class OrderService : IOrderService
 
     public async Task<bool> ConfirmOrderAsync(long id)
     {
-        return await UpdateStatusAsync(id, "Confirmed");
+        return await UpdateStatusAsync(id, OrderStatus.Confirmed);
     }
 
     public async Task<bool> ProcessOrderAsync(long id)
     {
-        return await UpdateStatusAsync(id, "Processing");
+        return await UpdateStatusAsync(id, OrderStatus.Processing);
     }
 
     public async Task<bool> ShipOrderAsync(long id, string trackingNumber)
@@ -384,8 +376,8 @@ public sealed class OrderService : IOrderService
                 return false;
             }
 
-            order.TrackingNumber = trackingNumber;
-            await UpdateStatusAsync(id, "Shipped");
+            // Tracking number is now handled by Shipment entity
+            await UpdateStatusAsync(id, OrderStatus.Shipped);
             
             _logger.LogInformation("Order shipped successfully: OrderId: {OrderId}, TrackingNumber: {TrackingNumber}", id, trackingNumber);
             return true;
@@ -399,7 +391,7 @@ public sealed class OrderService : IOrderService
 
     public async Task<bool> DeliverOrderAsync(long id)
     {
-        return await UpdateStatusAsync(id, "Delivered");
+        return await UpdateStatusAsync(id, OrderStatus.Delivered);
     }
 
     public async Task<bool> CancelOrderAsync(long id, string reason)
@@ -423,7 +415,7 @@ public sealed class OrderService : IOrderService
             }
 
             order.Notes = reason;
-            await UpdateStatusAsync(id, "Cancelled");
+            await UpdateStatusAsync(id, OrderStatus.Cancelled);
             
             _logger.LogInformation("Order cancelled successfully: OrderId: {OrderId}, Reason: {Reason}", id, reason);
             return true;
@@ -456,7 +448,7 @@ public sealed class OrderService : IOrderService
                 Status = "Pending",
                 TotalAmount = request.TotalAmount,
                 Currency = request.Currency ?? "TRY",
-                Notes = request.Notes,
+                // Notes are not supported in OrderGroup entity
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -496,7 +488,7 @@ public sealed class OrderService : IOrderService
         return new List<OrderGroupDto>();
     }
 
-    public async Task<bool> ProcessPaymentAsync(long orderId, PaymentProcessRequest request)
+    public async Task<bool> ProcessPaymentAsync(long orderId, Application.DTOs.Payments.PaymentProcessRequest request)
     {
         _logger.LogInformation("Processing payment for order: {OrderId}", orderId);
         
@@ -511,7 +503,7 @@ public sealed class OrderService : IOrderService
 
             // This would integrate with PaymentService
             // For now, just update order status
-            await UpdateStatusAsync(orderId, "Paid");
+            await UpdateStatusAsync(orderId, OrderStatus.Confirmed);
             
             _logger.LogInformation("Payment processed successfully for order: {OrderId}", orderId);
             return true;
@@ -523,7 +515,7 @@ public sealed class OrderService : IOrderService
         }
     }
 
-    public async Task<bool> RefundPaymentAsync(long orderId, RefundRequest request)
+    public async Task<bool> RefundPaymentAsync(long orderId, Application.DTOs.Payments.RefundRequest request)
     {
         _logger.LogInformation("Processing refund for order: {OrderId}", orderId);
         
@@ -538,7 +530,7 @@ public sealed class OrderService : IOrderService
 
             // This would integrate with PaymentService
             // For now, just update order status
-            await UpdateStatusAsync(orderId, "Refunded");
+            await UpdateStatusAsync(orderId, OrderStatus.Refunded);
             
             _logger.LogInformation("Refund processed successfully for order: {OrderId}", orderId);
             return true;
@@ -642,11 +634,11 @@ public sealed class OrderService : IOrderService
             {
                 TotalOrders = storeOrders.Count(),
                 TotalRevenue = storeOrders.Sum(o => o.TotalAmount),
-                PendingOrders = storeOrders.Count(o => o.Status == OrderStatus.Pending),
-                ProcessingOrders = storeOrders.Count(o => o.Status == OrderStatus.Processing),
-                ShippedOrders = storeOrders.Count(o => o.Status == OrderStatus.Shipped),
-                DeliveredOrders = storeOrders.Count(o => o.Status == OrderStatus.Delivered),
-                CancelledOrders = storeOrders.Count(o => o.Status == OrderStatus.Cancelled),
+                            PendingOrders = storeOrders.Count(o => o.Status == Domain.Enums.OrderStatus.Pending),
+            ProcessingOrders = storeOrders.Count(o => o.Status == Domain.Enums.OrderStatus.Processing),
+            ShippedOrders = storeOrders.Count(o => o.Status == Domain.Enums.OrderStatus.Shipped),
+            DeliveredOrders = storeOrders.Count(o => o.Status == Domain.Enums.OrderStatus.Delivered),
+            CancelledOrders = storeOrders.Count(o => o.Status == Domain.Enums.OrderStatus.Cancelled),
                 AverageOrderValue = storeOrders.Any() ? storeOrders.Average(o => o.TotalAmount) : 0,
                 Currency = "TRY"
             };
@@ -667,7 +659,7 @@ public sealed class OrderService : IOrderService
         
         try
         {
-            var pendingOrders = await _orderRepository.GetByStatusAsync("Pending");
+            var pendingOrders = await _orderRepository.GetByStatusAsync(OrderStatus.Pending);
             var orderDtos = await MapToOrderListDtosAsync(pendingOrders);
             
             _logger.LogInformation("Found {Count} pending orders", orderDtos.Count());
@@ -709,18 +701,18 @@ public sealed class OrderService : IOrderService
         return $"ORD-{date}-{random}";
     }
     
-    private bool IsValidStatusTransition(string currentStatus, string newStatus)
+    private bool IsValidStatusTransition(OrderStatus currentStatus, OrderStatus newStatus)
     {
         // Define valid status transitions
-        var validTransitions = new Dictionary<string, string[]>
+        var validTransitions = new Dictionary<OrderStatus, OrderStatus[]>
         {
-            ["Pending"] = new[] { "Confirmed", "Cancelled" },
-            ["Confirmed"] = new[] { "Processing", "Cancelled" },
-            ["Processing"] = new[] { "Shipped", "Cancelled" },
-            ["Shipped"] = new[] { "Delivered", "Cancelled" },
-            ["Delivered"] = new[] { "Refunded" },
-            ["Cancelled"] = new string[0], // Terminal state
-            ["Refunded"] = new string[0]  // Terminal state
+            [OrderStatus.Pending] = new[] { OrderStatus.Confirmed, OrderStatus.Cancelled },
+            [OrderStatus.Confirmed] = new[] { OrderStatus.Processing, OrderStatus.Cancelled },
+            [OrderStatus.Processing] = new[] { OrderStatus.Shipped, OrderStatus.Cancelled },
+            [OrderStatus.Shipped] = new[] { OrderStatus.Delivered, OrderStatus.Cancelled },
+            [OrderStatus.Delivered] = new[] { OrderStatus.Refunded },
+            [OrderStatus.Cancelled] = new OrderStatus[0], // Terminal state
+            [OrderStatus.Refunded] = new OrderStatus[0]  // Terminal state
         };
 
         if (!validTransitions.ContainsKey(currentStatus))
@@ -742,22 +734,18 @@ public sealed class OrderService : IOrderService
             Id = order.Id,
             OrderNumber = order.OrderNumber,
             CustomerId = order.CustomerId,
-            CustomerName = customer != null ? $"{customer.FirstName} {customer.LastName}" : "Unknown",
+            CustomerName = customer != null ? customer.User.FullName ?? "Unknown" : "Unknown",
             StoreId = order.StoreId,
             StoreName = store?.Name ?? "Unknown",
-            Status = order.Status.ToString(),
-            SubTotal = order.SubTotal,
+            Status = order.Status,
+            SubTotal = order.Subtotal,
             TaxAmount = order.TaxAmount,
             ShippingAmount = order.ShippingAmount,
             DiscountAmount = order.DiscountAmount,
             TotalAmount = order.TotalAmount,
             Currency = order.Currency,
             Notes = order.Notes,
-            ShippingAddress = order.ShippingAddress,
-            BillingAddress = order.BillingAddress,
-            Phone = order.Phone,
-            Email = order.Email,
-            TrackingNumber = order.TrackingNumber,
+            // These properties are not available in Order entity
             CreatedAt = order.CreatedAt,
             ModifiedAt = order.ModifiedAt,
             ShippedAt = order.ShippedAt,
@@ -778,10 +766,10 @@ public sealed class OrderService : IOrderService
             Id = order.Id,
             OrderNumber = order.OrderNumber,
             CustomerId = order.CustomerId,
-            CustomerName = customer != null ? $"{customer.FirstName} {customer.LastName}" : "Unknown",
+            CustomerName = customer != null ? customer.User.FullName ?? "Unknown" : "Unknown",
             StoreId = order.StoreId,
             StoreName = store?.Name ?? "Unknown",
-            Status = order.Status.ToString(),
+            Status = order.Status,
             TotalAmount = order.TotalAmount,
             Currency = order.Currency,
             ItemCount = orderItems.Count(),
@@ -813,12 +801,11 @@ public sealed class OrderService : IOrderService
             OrderId = item.OrderId,
             ProductId = item.ProductId,
             ProductName = product?.Name ?? "Unknown Product",
-            ProductSku = null, // Product entity'de Sku property'si yok
+            ProductSku = product?.Sku ?? "Unknown",
             Quantity = item.Quantity,
             UnitPrice = item.UnitPrice,
             TotalPrice = item.TotalPrice,
-            Currency = item.Currency,
-            Notes = item.Notes
+            // Currency and Notes are not available in OrderItem entity
         };
     }
     

@@ -25,7 +25,7 @@ public sealed record ProductDetailDto
     public bool IsFeatured { get; init; }
     public bool IsPublished { get; init; }
     public int DisplayOrder { get; init; }
-    public int Weight { get; init; }
+    public decimal Weight { get; init; }
     public int? MinOrderQty { get; init; }
     public int? MaxOrderQty { get; init; }
     public string? MetaTitle { get; init; }

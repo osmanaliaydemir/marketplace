@@ -1,10 +1,11 @@
 namespace Infrastructure.Persistence.Outbox;
 
-public sealed class OutboxMessage
+public sealed class OutboxMessage : Domain.Models.BaseEntity
 {
-    public long Id { get; init; }
-    public string Type { get; init; } = string.Empty;
-    public string Payload { get; init; } = string.Empty;
-    public DateTime CreatedAt { get; init; }
+    public string Type { get; set; } = string.Empty;
+    public string Data { get; set; } = string.Empty;
+    public string Status { get; set; } = "Pending"; // Pending, Processing, Completed, Failed
+    public int RetryCount { get; set; } = 0;
     public DateTime? ProcessedAt { get; set; }
+    public string? ErrorMessage { get; set; }
 }

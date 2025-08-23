@@ -96,8 +96,8 @@ public sealed class PaymentService : IPaymentService
                 PaymentId = createdPayment.Id.ToString(),
                 Amount = request.Amount,
                 Currency = request.Currency ?? "TRY",
-                CustomerEmail = customer.Email,
-                CustomerName = customer.FirstName + " " + customer.LastName,
+                CustomerEmail = customer.User.Email,
+                CustomerName = customer.User.FullName ?? "Unknown Customer",
                 OrderId = request.OrderId.ToString(),
                 Description = $"Order {order.OrderNumber} payment"
             });
@@ -105,8 +105,8 @@ public sealed class PaymentService : IPaymentService
             if (providerResult.Success)
             {
                 // Update payment with provider details
-                payment.ProviderPaymentId = providerResult.ProviderPaymentId;
-                payment.RedirectUrl = providerResult.RedirectUrl;
+                payment.ProviderPaymentId = providerResult.ProviderPaymentId ?? string.Empty;
+                // RedirectUrl is not supported in Payment entity
                 payment.Status = PaymentStatus.Initiated.ToString();
                 await _paymentRepository.UpdateAsync(payment);
                 
@@ -125,7 +125,7 @@ public sealed class PaymentService : IPaymentService
             {
                 // Update payment status to failed
                 payment.Status = PaymentStatus.Failed.ToString();
-                payment.FailureReason = providerResult.ErrorMessage;
+                payment.ErrorMessage = providerResult.ErrorMessage ?? "Unknown error";
                 await _paymentRepository.UpdateAsync(payment);
                 
                 _logger.LogWarning("Payment initiation failed: {PaymentId}, Error: {Error}", 
@@ -177,7 +177,7 @@ public sealed class PaymentService : IPaymentService
             if (providerResult.Success)
             {
                 payment.Status = PaymentStatus.Completed.ToString();
-                payment.TransactionId = providerResult.TransactionId;
+                payment.TransactionId = providerResult.TransactionId ?? string.Empty;
                 await _paymentRepository.UpdateAsync(payment);
                 
                 _logger.LogInformation("Payment processed successfully: {PaymentId}", paymentId);
@@ -341,7 +341,7 @@ public sealed class PaymentService : IPaymentService
             if (request.Status == "success")
             {
                 payment.Status = PaymentStatus.Completed.ToString();
-                payment.TransactionId = request.TransactionId;
+                payment.TransactionId = request.TransactionId ?? string.Empty;
                 payment.ProcessedAt = DateTime.UtcNow;
             }
             else
@@ -389,7 +389,7 @@ public sealed class PaymentService : IPaymentService
             {
                 case "payment.completed":
                     payment.Status = PaymentStatus.Completed.ToString();
-                    payment.TransactionId = request.TransactionId;
+                    payment.TransactionId = request.TransactionId ?? string.Empty;
                     payment.ProcessedAt = DateTime.UtcNow;
                     break;
                     
@@ -607,8 +607,8 @@ public sealed class PaymentService : IPaymentService
                 StoreId = request.StoreId,
                 TotalAmount = payment.Amount,
                 CommissionAmount = commissionAmount,
-                StoreAmount = storeAmount,
-                CommissionRate = commissionRate,
+                NetAmount = storeAmount,
+                // CommissionRate is not supported in PaymentSplit entity
                 Status = PaymentSplitStatus.Pending.ToString(),
                 CreatedAt = DateTime.UtcNow
             };
@@ -651,8 +651,8 @@ public sealed class PaymentService : IPaymentService
                 StoreId = paymentSplit.StoreId,
                 TotalAmount = paymentSplit.TotalAmount,
                 CommissionAmount = paymentSplit.CommissionAmount,
-                StoreAmount = paymentSplit.StoreAmount,
-                CommissionRate = paymentSplit.CommissionRate,
+                NetAmount = paymentSplit.NetAmount,
+                // CommissionRate is not supported in PaymentSplit entity
                 Status = paymentSplit.Status.ToString(),
                 CreatedAt = paymentSplit.CreatedAt
             };
@@ -686,7 +686,7 @@ public sealed class PaymentService : IPaymentService
 
             // Update payment split status
             paymentSplit.Status = PaymentSplitStatus.Completed.ToString();
-            paymentSplit.CompletedAt = DateTime.UtcNow;
+                            paymentSplit.ProcessedAt = DateTime.UtcNow;
             await _paymentRepository.UpdatePaymentSplitAsync(paymentSplit);
 
             _logger.LogInformation("Commission released successfully for payment: {PaymentId}, Store: {StoreId}", 
@@ -1092,7 +1092,7 @@ public sealed class PaymentService : IPaymentService
             Id = payment.Id,
             OrderId = payment.OrderId,
             CustomerId = customer?.Id ?? 0,
-            CustomerName = customer != null ? $"{customer.FirstName} {customer.LastName}" : "Unknown",
+            CustomerName = customer != null ? customer.User.FullName ?? "Unknown" : "Unknown",
             StoreId = store?.Id ?? 0,
             StoreName = store?.Name ?? "Unknown",
             Amount = payment.Amount,

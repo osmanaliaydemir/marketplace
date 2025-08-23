@@ -14,19 +14,22 @@ public sealed class CartService : ICartService
     private readonly ICustomerRepository _customerRepository;
     private readonly IStoreRepository _storeRepository;
     private readonly IInventoryService _inventoryService;
+    private readonly ICartRepository _cartRepository;
 
     public CartService(
         ILogger<CartService> logger,
         IProductRepository productRepository,
         ICustomerRepository customerRepository,
         IStoreRepository storeRepository,
-        IInventoryService inventoryService)
+        IInventoryService inventoryService,
+        ICartRepository cartRepository)
     {
         _logger = logger;
         _productRepository = productRepository;
         _customerRepository = customerRepository;
         _storeRepository = storeRepository;
         _inventoryService = inventoryService;
+        _cartRepository = cartRepository;
     }
 
     public async Task<CartDto> GetCartAsync(long customerId)
@@ -43,22 +46,19 @@ public sealed class CartService : ICartService
                 throw new ArgumentException($"Customer with ID {customerId} not found");
             }
 
-            // For now, return empty cart since we don't have Cart repository
-            // This would integrate with CartRepository in a real implementation
-            return new CartDto
+            // Create new cart
+            var cart = new Cart
             {
-                Id = 0,
                 CustomerId = customerId,
-                CreatedAt = DateTime.UtcNow,
-                ModifiedAt = DateTime.UtcNow,
+                SessionId = Guid.NewGuid().ToString(),
+                IsActive = true,
                 ExpiresAt = DateTime.UtcNow.AddDays(30),
-                Items = Enumerable.Empty<CartItemDto>(),
-                TotalItemCount = 0,
-                UniqueProductCount = 0,
-                SubTotal = 0,
-                Total = 0,
-                Currency = "TRY"
+                CreatedAt = DateTime.UtcNow,
+                ModifiedAt = DateTime.UtcNow
             };
+            
+            var createdCart = await _cartRepository.AddAsync(cart);
+            return await MapToCartDtoAsync(createdCart);
         }
         catch (Exception ex)
         {
@@ -81,22 +81,25 @@ public sealed class CartService : ICartService
                 throw new ArgumentException($"Customer with ID {customerId} not found");
             }
 
-            // For now, return empty cart since we don't have Cart repository
-            // This would integrate with CartRepository in a real implementation
-            return new CartDto
+            // Get existing cart or create new one
+            var cart = await _cartRepository.GetByCustomerIdAsync(customerId);
+            if (cart == null)
             {
-                Id = 0,
-                CustomerId = customerId,
-                CreatedAt = DateTime.UtcNow,
-                ModifiedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddDays(30),
-                Items = Enumerable.Empty<CartItemDto>(),
-                TotalItemCount = 0,
-                UniqueProductCount = 0,
-                SubTotal = 0,
-                Total = 0,
-                Currency = "TRY"
-            };
+                // Create new cart
+                cart = new Cart
+                {
+                    CustomerId = customerId,
+                    SessionId = Guid.NewGuid().ToString(),
+                    IsActive = true,
+                    ExpiresAt = DateTime.UtcNow.AddDays(30),
+                    CreatedAt = DateTime.UtcNow,
+                    ModifiedAt = DateTime.UtcNow
+                };
+                
+                cart = await _cartRepository.AddAsync(cart);
+            }
+            
+            return await MapToCartDtoAsync(cart);
         }
         catch (Exception ex)
         {
@@ -664,5 +667,37 @@ public sealed class CartService : ICartService
                 fromCustomerId, toCustomerId);
             throw;
         }
+    }
+    
+    private async Task<CartDto> MapToCartDtoAsync(Cart cart)
+    {
+        var items = cart.Items?.Select(item => new CartItemDto
+        {
+            Id = item.Id,
+            CartId = item.CartId,
+            ProductId = item.ProductId,
+            ProductVariantId = item.ProductVariantId,
+            Quantity = item.Quantity,
+            UnitPrice = new Money(item.UnitPrice, "TRY"),
+            TotalPrice = new Money(item.TotalPrice, "TRY"),
+            AddedAt = item.CreatedAt
+        }) ?? Enumerable.Empty<CartItemDto>();
+        
+        var subTotal = items.Sum(item => item.TotalPrice.Amount);
+        
+        return new CartDto
+        {
+            Id = cart.Id,
+            CustomerId = cart.CustomerId,
+            CreatedAt = cart.CreatedAt,
+            ModifiedAt = cart.ModifiedAt,
+            ExpiresAt = cart.ExpiresAt,
+            Items = items,
+            TotalItemCount = items.Sum(item => item.Quantity),
+            UniqueProductCount = items.Count(),
+            SubTotal = subTotal,
+            Total = subTotal, // Shipping, tax etc. would be added here
+            Currency = "TRY"
+        };
     }
 }

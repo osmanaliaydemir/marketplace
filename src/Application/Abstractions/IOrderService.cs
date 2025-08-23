@@ -1,4 +1,5 @@
 using Application.DTOs.Orders;
+using Application.DTOs.Payments;
 
 namespace Application.Abstractions;
 
@@ -20,7 +21,7 @@ public interface IOrderService
     Task<OrderDetailDto?> GetStoreOrderAsync(long storeId, long orderId);
     
     // Order Status Management
-    Task<bool> UpdateStatusAsync(long id, string status, string? note = null);
+    Task<bool> UpdateStatusAsync(long id, Domain.Enums.OrderStatus status, string? note = null);
     Task<bool> ConfirmOrderAsync(long id);
     Task<bool> ProcessOrderAsync(long id);
     Task<bool> ShipOrderAsync(long id, string trackingNumber);
@@ -33,8 +34,8 @@ public interface IOrderService
     Task<IEnumerable<OrderGroupDto>> GetCustomerOrderGroupsAsync(long customerId);
     
     // Payment Integration
-    Task<bool> ProcessPaymentAsync(long orderId, PaymentProcessRequest request);
-    Task<bool> RefundPaymentAsync(long orderId, RefundRequest request);
+    Task<bool> ProcessPaymentAsync(long orderId, Application.DTOs.Payments.PaymentProcessRequest request);
+    Task<bool> RefundPaymentAsync(long orderId, Application.DTOs.Payments.RefundRequest request);
     Task<PaymentStatusDto> GetPaymentStatusAsync(long orderId);
     
     // Dashboard and Admin

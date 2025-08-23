@@ -194,7 +194,7 @@ public sealed class ProductVariantsController : ControllerBase
 				Price = request.Price,
 				CompareAtPrice = request.CompareAtPrice,
 				StockQty = request.StockQty,
-				MinOrderQty = request.MinOrderQty ?? 1,
+				MinOrderQty = request.MinOrderQty,
 				MaxOrderQty = request.MaxOrderQty,
 				DisplayOrder = request.DisplayOrder,
 				IsDefault = request.IsDefault,

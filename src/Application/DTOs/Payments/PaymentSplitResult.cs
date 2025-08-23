@@ -7,8 +7,8 @@ public sealed record PaymentSplitResult
     public long StoreId { get; init; }
     public decimal TotalAmount { get; init; }
     public decimal CommissionAmount { get; init; }
-    public decimal StoreAmount { get; init; }
-    public decimal CommissionRate { get; init; }
+    public decimal NetAmount { get; init; }
+    // CommissionRate is not supported
     public string? Status { get; init; }
     public DateTime CreatedAt { get; init; }
     public string? ErrorMessage { get; init; }

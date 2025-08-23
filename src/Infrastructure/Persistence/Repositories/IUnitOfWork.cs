@@ -27,4 +27,7 @@ public interface IStoreUnitOfWork : IUnitOfWork
     IRepository<Category> Categories { get; }
     IRepository<ProductVariant> ProductVariants { get; }
     IRepository<ProductImage> ProductImages { get; }
+    IInventoryRepository Inventory { get; } 
+    IRepository<Customer> Customers { get; } 
+    IRepository<Payment> Payments { get; }
 }

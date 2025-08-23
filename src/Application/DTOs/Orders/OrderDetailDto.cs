@@ -1,3 +1,5 @@
+using Domain.Enums;
+
 namespace Application.DTOs.Orders;
 
 public record OrderDetailDto
@@ -8,7 +10,7 @@ public record OrderDetailDto
     public string CustomerName { get; init; } = string.Empty;
     public long StoreId { get; init; }
     public string StoreName { get; init; } = string.Empty;
-    public string Status { get; init; } = string.Empty;
+    public OrderStatus Status { get; init; }
     public decimal SubTotal { get; init; }
     public decimal TaxAmount { get; init; }
     public decimal ShippingAmount { get; init; }

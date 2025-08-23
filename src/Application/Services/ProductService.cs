@@ -60,9 +60,9 @@ public sealed class ProductService : IProductService
                 CompareAtPrice = request.CompareAtPrice,
                 Currency = request.Currency ?? "TRY",
                 StockQty = request.StockQty,
-                Weight = request.Weight,
+                Weight = (decimal)request.Weight,
                 MinOrderQty = request.MinOrderQty,
-                MaxOrderQty = request.MaxOrderQty,
+                MaxOrderQty = request.MaxOrderQty ?? 999,
                 IsActive = true,
                 IsPublished = false, // Default to unpublished
                 IsFeatured = false,
@@ -108,9 +108,9 @@ public sealed class ProductService : IProductService
             existingProduct.Price = request.Price;
             existingProduct.CompareAtPrice = request.CompareAtPrice;
             existingProduct.StockQty = request.StockQty;
-            existingProduct.Weight = request.Weight;
+            existingProduct.Weight = (decimal)request.Weight;
             existingProduct.MinOrderQty = request.MinOrderQty;
-            existingProduct.MaxOrderQty = request.MaxOrderQty;
+            existingProduct.MaxOrderQty = request.MaxOrderQty ?? 999;
             existingProduct.DisplayOrder = request.DisplayOrder;
             existingProduct.MetaTitle = request.MetaTitle ?? request.Name;
             existingProduct.MetaDescription = request.MetaDescription ?? request.ShortDescription;
@@ -794,8 +794,8 @@ public sealed class ProductService : IProductService
             Price = product.Price,
             CompareAtPrice = product.CompareAtPrice,
             Currency = product.Currency,
-            StockQty = product.StockQty,
-            Weight = product.Weight,
+            StockQty = product.StockQty ?? 0,
+            Weight = (int)product.Weight,
             MinOrderQty = product.MinOrderQty,
             MaxOrderQty = product.MaxOrderQty,
             IsActive = product.IsActive,
@@ -807,7 +807,7 @@ public sealed class ProductService : IProductService
             StoreId = product.StoreId,
             StoreName = store?.Name ?? "Unknown",
             SellerId = product.SellerId,
-            SellerName = "Seller", // TODO: Get from AppUser via Seller.UserId
+            SellerName = seller?.User?.FullName ?? "Unknown",
             MetaTitle = product.MetaTitle,
             MetaDescription = product.MetaDescription,
             MetaKeywords = product.MetaKeywords,

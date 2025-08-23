@@ -12,7 +12,7 @@ public static class ServiceRegistration
 		// Service interfaces registration
 		services.AddScoped<IProductService, ProductService>();
 		services.AddScoped<ICategoryService, CategoryService>();
-		// services.AddScoped<IOrderService, OrderService>(); // TEMPORARILY COMMENTED OUT
+		services.AddScoped<IOrderService, OrderService>();
 		services.AddScoped<ICartService, CartService>();
 		services.AddScoped<IPaymentService, PaymentService>();
 		services.AddScoped<IInventoryService, InventoryService>();

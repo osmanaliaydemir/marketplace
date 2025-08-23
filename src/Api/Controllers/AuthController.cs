@@ -62,7 +62,7 @@ public sealed class AuthController : ControllerBase
                 Success = true,
                 Token = token,
                 RefreshToken = refreshToken,
-                Role = user.Role,
+                Role = user.Role.ToString(),
                 UserName = user.FullName,
                 UserId = user.Id,
                 Message = "Giriş başarılı"
@@ -127,10 +127,10 @@ public sealed class AuthController : ControllerBase
                     Success = true,
                     Token = newToken,
                     RefreshToken = newRefreshToken,
-                    Role = user.Role,
-                    UserName = user.FullName,
-                    UserId = user.Id,
-                    Message = "Token yenilendi"
+                                    Role = user.Role.ToString(),
+                UserName = user.FullName,
+                UserId = user.Id,
+                Message = "Token yenilendi"
                 });
             }
             catch
@@ -204,7 +204,7 @@ public sealed class AuthController : ControllerBase
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Name, user.FullName),
-            new Claim(ClaimTypes.Role, user.Role)
+            new Claim(ClaimTypes.Role, user.Role.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!));

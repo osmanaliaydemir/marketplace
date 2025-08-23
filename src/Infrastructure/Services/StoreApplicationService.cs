@@ -1,6 +1,7 @@
 using Application.Abstractions;
 using Application.DTOs.Stores;
 using Domain.Entities;
+using Domain.Enums;
 using Infrastructure.Persistence.Repositories;
 using Microsoft.Extensions.Logging;
 
@@ -45,8 +46,7 @@ public sealed class StoreApplicationService
 
                 seller = await _unitOfWork.Sellers.AddAsync(seller);
 
-                // Başvuruya seller ID'sini ekle
-                application.SellerId = seller.Id;
+                // Seller ID is not supported in StoreApplication entity
                 await _unitOfWork.StoreApplications.UpdateAsync(application);
 
                 // Transaction'ı commit et
@@ -88,10 +88,27 @@ public sealed class StoreApplicationService
                 if (application.Status != StoreApplicationStatus.Pending)
                     throw new InvalidOperationException($"Store application {applicationId} is not pending");
 
+                // Başvuru sahibi kullanıcıyı bul
+                var applicantUser = await FindOrCreateUserAsync(application.ContactEmail, application.StoreName);
+                
+                // Seller'ı bul veya oluştur
+                var sellers = await _unitOfWork.Sellers.GetAsync(s => s.UserId == applicantUser.Id);
+                var seller = sellers.FirstOrDefault();
+                if (seller == null)
+                {
+                    seller = new Seller
+                    {
+                        UserId = applicantUser.Id,
+                        CommissionRate = 0.10m, // Varsayılan %10 komisyon
+                        IsActive = false, // Onaylanana kadar pasif
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    seller = await _unitOfWork.Sellers.AddAsync(seller);
+                }
+
                 // Başvuruyu onayla
                 application.Status = StoreApplicationStatus.Approved;
                 application.ApprovedAt = DateTime.UtcNow;
-                application.ApprovedByUserId = approvedByUserId;
                 application.ModifiedAt = DateTime.UtcNow;
 
                 await _unitOfWork.StoreApplications.UpdateAsync(application);
@@ -99,9 +116,9 @@ public sealed class StoreApplicationService
                 // Mağaza oluştur
                 var store = new Store
                 {
-                    SellerId = application.SellerId!.Value,
+                    SellerId = seller.Id,
                     Name = application.StoreName,
-                    Slug = application.Slug,
+                    Slug = application.StoreName.ToLowerInvariant().Replace(" ", "-"), // Generate slug from name
                     LogoUrl = null,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
@@ -110,13 +127,9 @@ public sealed class StoreApplicationService
                 store = await _unitOfWork.Stores.AddAsync(store);
 
                 // Seller'ı aktif yap
-                var seller = await _unitOfWork.Sellers.GetByIdAsync(application.SellerId.Value);
-                if (seller != null)
-                {
-                    seller.IsActive = true;
-                    seller.ModifiedAt = DateTime.UtcNow;
-                    await _unitOfWork.Sellers.UpdateAsync(seller);
-                }
+                seller.IsActive = true;
+                seller.ModifiedAt = DateTime.UtcNow;
+                await _unitOfWork.Sellers.UpdateAsync(seller);
 
                 // Transaction'ı commit et
                 await _unitOfWork.CommitTransactionAsync();
@@ -153,7 +166,6 @@ public sealed class StoreApplicationService
 
             // Başvuruyu reddet
             application.Status = StoreApplicationStatus.Rejected;
-            application.RejectionReason = reason;
             application.ModifiedAt = DateTime.UtcNow;
 
             await _unitOfWork.StoreApplications.UpdateAsync(application);
@@ -183,7 +195,7 @@ public sealed class StoreApplicationService
             Email = email,
             FullName = fullName,
             PasswordHash = string.Empty, // Şifre daha sonra set edilecek
-            Role = "Seller",
+            Role = UserRole.Seller,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };

@@ -1,19 +1,18 @@
 namespace Domain.Entities;
 
-public sealed class WebhookDelivery : Domain.Models.AuditableEntity
+public sealed class WebhookDelivery : Domain.Models.BaseEntity
 {
-    public long Id { get; init; }
-    public string EventType { get; set; } = string.Empty;
+    public string WebhookUrl { get; set; } = string.Empty;
     public string Payload { get; set; } = string.Empty;
-    public string? Signature { get; set; }
-    public string? Status { get; set; }
-    public int Attempts { get; set; }
-    public DateTime CreatedAt { get; init; }
-    public DateTime? DeliveredAt { get; set; }
-    public string? ExternalId { get; set; }
-    public string? MerchantOid { get; set; }
-    public DateTime? ProcessedAt { get; set; }
-    public string? Error { get; set; }
+    public string Status { get; set; } = "Pending"; // Pending, Sent, Failed
+    public int RetryCount { get; set; } = 0;
+    public DateTime? SentAt { get; set; }
+    public string? ErrorMessage { get; set; }
+    public int ResponseCode { get; set; }
+    public string? ResponseBody { get; set; }
+    
+    // Navigation properties
+    public OutboxMessage OutboxMessage { get; set; } = null!;
 }
 
 

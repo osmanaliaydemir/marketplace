@@ -143,9 +143,17 @@ public class UnitOfWork : IUnitOfWork
 
 public sealed class StoreUnitOfWork : UnitOfWork, IStoreUnitOfWork
 {
-    public StoreUnitOfWork(IDbContext dbContext, ILogger<StoreUnitOfWork> logger, ITableNameResolver tableNameResolver, IColumnNameResolver columnNameResolver)
+    private readonly IInventoryRepository _inventoryRepository;
+
+    public StoreUnitOfWork(
+        IDbContext dbContext, 
+        ILogger<StoreUnitOfWork> logger, 
+        ITableNameResolver tableNameResolver, 
+        IColumnNameResolver columnNameResolver,
+        IInventoryRepository inventoryRepository)
         : base(dbContext, logger, tableNameResolver, columnNameResolver)
     {
+        _inventoryRepository = inventoryRepository;
     }
 
     public IRepository<Store> Stores => AuditableRepository<Store>();
@@ -157,4 +165,7 @@ public sealed class StoreUnitOfWork : UnitOfWork, IStoreUnitOfWork
     public IRepository<Category> Categories => AuditableRepository<Category>();
     public IRepository<ProductVariant> ProductVariants => AuditableRepository<ProductVariant>();
     public IRepository<ProductImage> ProductImages => AuditableRepository<ProductImage>();
+    public IInventoryRepository Inventory => _inventoryRepository; // EKLENDI!
+    public IRepository<Customer> Customers => AuditableRepository<Customer>(); // BONUS: Bu da eksikti
+    public IRepository<Payment> Payments => AuditableRepository<Payment>(); // BONUS: Bu da eksikti
 }

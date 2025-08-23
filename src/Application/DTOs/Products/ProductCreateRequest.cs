@@ -35,8 +35,8 @@ public sealed record ProductCreateRequest
     [Range(0, int.MaxValue, ErrorMessage = "Stok miktarı 0'dan küçük olamaz")]
     public int StockQty { get; init; }
     
-    [Range(0, int.MaxValue, ErrorMessage = "Ağırlık 0'dan küçük olamaz")]
-    public int Weight { get; init; }
+    [Range(0, double.MaxValue, ErrorMessage = "Ağırlık 0'dan küçük olamaz")]
+    public decimal Weight { get; init; }
     
     [Range(1, int.MaxValue, ErrorMessage = "Minimum sipariş miktarı 1'den küçük olamaz")]
     public int MinOrderQty { get; init; } = 1;

@@ -41,21 +41,19 @@ public sealed class CreateProductVariantRequestValidator : AbstractValidator<Cre
 
 		RuleFor(x => x.MinOrderQty)
 			.GreaterThan(0).WithMessage("Minimum sipariş miktarı 0'dan büyük olmalıdır")
-			.LessThanOrEqualTo(9999).WithMessage("Minimum sipariş miktarı 9,999'dan küçük olmalıdır")
-			.When(x => x.MinOrderQty.HasValue);
+			.LessThanOrEqualTo(9999).WithMessage("Minimum sipariş miktarı 9,999'dan küçük olmalıdır");
 
 		RuleFor(x => x.MaxOrderQty)
 			.GreaterThan(0).WithMessage("Maksimum sipariş miktarı 0'dan büyük olmalıdır")
-			.LessThanOrEqualTo(9999).WithMessage("Maksimum sipariş miktarı 9,999'dan küçük olmalıdır")
-			.When(x => x.MaxOrderQty.HasValue);
+			.LessThanOrEqualTo(9999).WithMessage("Maksimum sipariş miktarı 9,999'dan küçük olmalıdır");
 
 		RuleFor(x => x.MinOrderQty)
-			.Must((variant, minQty) => !minQty.HasValue || !variant.MaxOrderQty.HasValue || minQty <= variant.MaxOrderQty)
+			.Must((variant, minQty) => minQty <= variant.MaxOrderQty)
 			.WithMessage("Minimum sipariş miktarı maksimum sipariş miktarından küçük veya eşit olmalıdır");
 
 		RuleFor(x => x.Weight)
 			.GreaterThanOrEqualTo(0).WithMessage("Ağırlık 0 veya daha büyük olmalıdır")
-			.LessThanOrEqualTo(999999).WithMessage("Ağırlık 999,999 gramdan küçük olmalıdır");
+			.LessThanOrEqualTo(999999.99m).WithMessage("Ağırlık 999,999.99'dan küçük olmalıdır");
 
 		RuleFor(x => x.IsDefault)
 			.NotNull().WithMessage("Varsayılan varyant bilgisi gereklidir");

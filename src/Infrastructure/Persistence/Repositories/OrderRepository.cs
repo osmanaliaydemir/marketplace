@@ -84,7 +84,7 @@ public sealed class OrderRepository : Repository<Order>, IOrderRepository
         }
     }
 
-    public async Task<IEnumerable<Order>> GetByStatusAsync(string status)
+    public async Task<IEnumerable<Order>> GetByStatusAsync(Domain.Enums.OrderStatus status)
     {
         try
         {

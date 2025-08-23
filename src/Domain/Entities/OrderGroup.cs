@@ -2,19 +2,16 @@ namespace Domain.Entities;
 
 public sealed class OrderGroup : Domain.Models.AuditableEntity
 {
-    public long Id { get; init; }
     public long CustomerId { get; set; }
-    public long OrderId { get; set; }
-    public long SellerId { get; set; }
-    public long StoreId { get; set; }
-    public decimal ItemsTotal { get; set; }
-    public decimal ShippingTotal { get; set; }
-    public decimal GroupTotal { get; set; }
+    public string GroupNumber { get; set; } = string.Empty;
+    public string Status { get; set; } = "Pending"; // Pending, Processing, Completed, Cancelled
     public decimal TotalAmount { get; set; }
     public string Currency { get; set; } = "TRY";
-    public string Status { get; set; } = string.Empty;
-    public string? Notes { get; set; }
-    public DateTime CreatedAt { get; init; }
+    public DateTime? CompletedAt { get; set; }
+    
+    // Navigation properties
+    public Customer Customer { get; set; } = null!;
+    public ICollection<Order> Orders { get; set; } = new List<Order>();
 }
 
 

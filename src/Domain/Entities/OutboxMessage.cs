@@ -1,14 +1,16 @@
 namespace Domain.Entities;
 
-public sealed class OutboxMessage : Domain.Models.AuditableEntity
+public sealed class OutboxMessage : Domain.Models.BaseEntity
 {
-    public Guid Id { get; init; }
     public string Type { get; set; } = string.Empty;
-    public string Payload { get; set; } = string.Empty;
-    public DateTime OccurredOn { get; init; }
-    public DateTime? ProcessedOn { get; set; }
-    public int Retries { get; set; }
-    public string? Error { get; set; }
+    public string Data { get; set; } = string.Empty;
+    public string Status { get; set; } = "Pending"; // Pending, Processing, Completed, Failed
+    public int RetryCount { get; set; } = 0;
+    public DateTime? ProcessedAt { get; set; }
+    public string? ErrorMessage { get; set; }
+    
+    // Navigation properties
+    public ICollection<WebhookDelivery> WebhookDeliveries { get; set; } = new List<WebhookDelivery>();
 }
 
 

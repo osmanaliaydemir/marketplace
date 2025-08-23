@@ -1,16 +1,19 @@
+using Domain.Enums;
+
 namespace Domain.Entities;
 
-public sealed class Shipment : Domain.Models.AuditableEntity
+public sealed class Shipment : Domain.Models.BaseEntity
 {
-    public long Id { get; init; }
-    public long OrderGroupId { get; set; }
+    public long OrderId { get; set; }
+    public string TrackingNumber { get; set; } = string.Empty;
     public string Carrier { get; set; } = string.Empty;
-    public string? Service { get; set; }
-    public string? TrackingNumber { get; set; }
-    public string? LabelUrl { get; set; }
-    public string Status { get; set; } = string.Empty;
+    public ShipmentStatus Status { get; set; } = ShipmentStatus.Pending;
     public DateTime? ShippedAt { get; set; }
     public DateTime? DeliveredAt { get; set; }
+    public string? Notes { get; set; }
+    
+    // Navigation properties
+    public Order Order { get; set; } = null!;
 }
 
 

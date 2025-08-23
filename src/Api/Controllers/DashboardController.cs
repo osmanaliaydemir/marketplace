@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Infrastructure.Persistence.Repositories;
+using Domain.Enums;
 
 namespace Api.Controllers;
 
@@ -28,10 +29,10 @@ public sealed class DashboardController : ControllerBase
 
             var stats = new DashboardStats
             {
-                TotalSales = orders.Where(o => o.Status == Domain.Entities.OrderStatus.Completed)
+                TotalSales = orders.Where(o => o.Status == OrderStatus.Delivered)
                                  .Sum(o => o.TotalAmount),
                 TotalOrders = orders.Count(),
-                PendingApplications = storeApplications.Count(a => a.Status == Domain.Entities.StoreApplicationStatus.Pending),
+                PendingApplications = storeApplications.Count(a => a.Status == StoreApplicationStatus.Pending),
                 ActiveStores = stores.Count(s => s.IsActive)
             };
 

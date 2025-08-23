@@ -236,8 +236,8 @@ public sealed class PaymentRepository : Repository<Payment>, IPaymentRepository
         try
         {
             const string sql = @"
-                INSERT INTO PaymentSplits (PaymentId, StoreId, TotalAmount, CommissionAmount, StoreAmount, CommissionRate, Status, CreatedAt)
-                VALUES (@PaymentId, @StoreId, @TotalAmount, @CommissionAmount, @StoreAmount, @CommissionRate, @Status, @CreatedAt);
+                INSERT INTO PaymentSplits (PaymentId, StoreId, TotalAmount, CommissionAmount, NetAmount, Status, CreatedAt)
+VALUES (@PaymentId, @StoreId, @TotalAmount, @CommissionAmount, @NetAmount, @Status, @CreatedAt);
                 SELECT CAST(SCOPE_IDENTITY() as bigint)";
 
             using var connection = await _context.GetConnectionAsync();
@@ -247,8 +247,8 @@ public sealed class PaymentRepository : Repository<Payment>, IPaymentRepository
                 paymentSplit.StoreId,
                 paymentSplit.TotalAmount,
                 paymentSplit.CommissionAmount,
-                paymentSplit.StoreAmount,
-                paymentSplit.CommissionRate,
+                paymentSplit.NetAmount,
+                // CommissionRate is not supported in PaymentSplit entity
                 Status = paymentSplit.Status.ToString(),
                 paymentSplit.CreatedAt
             });
@@ -261,8 +261,7 @@ public sealed class PaymentRepository : Repository<Payment>, IPaymentRepository
                 StoreId = paymentSplit.StoreId,
                 TotalAmount = paymentSplit.TotalAmount,
                 CommissionAmount = paymentSplit.CommissionAmount,
-                StoreAmount = paymentSplit.StoreAmount,
-                CommissionRate = paymentSplit.CommissionRate,
+                NetAmount = paymentSplit.NetAmount,
                 Status = paymentSplit.Status,
                 CreatedAt = paymentSplit.CreatedAt
             };
@@ -301,7 +300,7 @@ public sealed class PaymentRepository : Repository<Payment>, IPaymentRepository
         {
             const string sql = @"
                 UPDATE PaymentSplits 
-                SET Status = @Status, CompletedAt = @CompletedAt
+                SET Status = @Status, ProcessedAt = @ProcessedAt
                 WHERE Id = @Id";
 
             using var connection = await _context.GetConnectionAsync();
@@ -309,7 +308,7 @@ public sealed class PaymentRepository : Repository<Payment>, IPaymentRepository
             {
                 paymentSplit.Id,
                 Status = paymentSplit.Status.ToString(),
-                paymentSplit.CompletedAt
+                paymentSplit.ProcessedAt
             });
 
             var success = rowsAffected > 0;

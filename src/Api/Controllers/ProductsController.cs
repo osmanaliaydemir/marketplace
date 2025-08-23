@@ -115,7 +115,7 @@ public sealed class ProductsController : ControllerBase
                 Price = p.Price,
                 CompareAtPrice = p.CompareAtPrice,
                 Currency = p.Currency,
-                StockQty = p.StockQty,
+                StockQty = p.StockQty ?? 0,
                 IsActive = p.IsActive,
                 IsFeatured = p.IsFeatured,
                 PrimaryImageUrl = null, // TODO: ProductImage'dan al
@@ -184,11 +184,11 @@ public sealed class ProductsController : ControllerBase
                 Price = product.Price,
                 CompareAtPrice = product.CompareAtPrice,
                 Currency = product.Currency,
-                StockQty = product.StockQty,
+                StockQty = product.StockQty ?? 0,
                 IsActive = product.IsActive,
                 IsFeatured = product.IsFeatured,
                 IsPublished = product.IsPublished,
-                Weight = product.Weight,
+                Weight = (int)product.Weight,
                 MinOrderQty = product.MinOrderQty,
                 MaxOrderQty = product.MaxOrderQty,
                 MetaTitle = product.MetaTitle,
@@ -239,7 +239,7 @@ public sealed class ProductsController : ControllerBase
                         Id = user.Id,
                         Email = user.Email,
                         FullName = user.FullName,
-                        Role = user.Role,
+                        Role = user.Role.ToString(),
                         IsActive = user.IsActive,
                         CreatedAt = user.CreatedAt,
                         ModifiedAt = user.ModifiedAt
@@ -359,9 +359,9 @@ public sealed class ProductsController : ControllerBase
                 IsActive = request.IsActive,
                 IsFeatured = request.IsFeatured,
                 IsPublished = request.IsPublished,
-                Weight = request.Weight,
-                MinOrderQty = request.MinOrderQty,
-                MaxOrderQty = request.MaxOrderQty,
+                Weight = (decimal)request.Weight,
+                MinOrderQty = request.MinOrderQty ?? 1,
+                MaxOrderQty = request.MaxOrderQty ?? 999,
                 MetaTitle = request.MetaTitle,
                 MetaDescription = request.MetaDescription,
                 MetaKeywords = request.MetaKeywords,
@@ -479,9 +479,9 @@ public sealed class ProductsController : ControllerBase
             product.IsActive = request.IsActive;
             product.IsFeatured = request.IsFeatured;
             product.IsPublished = request.IsPublished;
-            product.Weight = request.Weight;
-            product.MinOrderQty = request.MinOrderQty;
-            product.MaxOrderQty = request.MaxOrderQty;
+            product.Weight = (decimal)request.Weight;
+            product.MinOrderQty = request.MinOrderQty ?? 1;
+            product.MaxOrderQty = request.MaxOrderQty ?? 999;
             product.MetaTitle = request.MetaTitle;
             product.MetaDescription = request.MetaDescription;
             product.MetaKeywords = request.MetaKeywords;

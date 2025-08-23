@@ -1,14 +1,15 @@
 namespace Domain.Entities;
 
-public sealed class StoreCategory : Domain.Models.AuditableEntity
+public sealed class StoreCategory : Domain.Models.BaseEntity
 {
-    public long Id { get; init; }
     public long StoreId { get; set; }
-    public long? ParentId { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Slug { get; set; } = string.Empty;
+    public long CategoryId { get; set; }
     public bool IsActive { get; set; } = true;
-    public long? GlobalCategoryId { get; set; }
+    public int DisplayOrder { get; set; } = 0;
+    
+    // Navigation properties
+    public Store Store { get; set; } = null!;
+    public Category Category { get; set; } = null!;
 }
 
 

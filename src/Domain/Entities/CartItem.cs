@@ -3,19 +3,18 @@ using Domain.ValueObjects;
 
 namespace Domain.Entities;
 
-public class CartItem : BaseEntity
+public sealed class CartItem : Domain.Models.AuditableEntity
 {
     public long CartId { get; set; }
     public long ProductId { get; set; }
     public long? ProductVariantId { get; set; }
+    public long StoreId { get; set; }
     public int Quantity { get; set; }
-    public Money UnitPrice { get; set; }
-    public Money TotalPrice { get; set; }
-    public DateTime AddedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    public decimal UnitPrice { get; set; }
+    public decimal TotalPrice { get; set; }
     
     // Navigation properties
-    public virtual Cart Cart { get; set; } = null!;
-    public virtual Product Product { get; set; } = null!;
-    public virtual ProductVariant? ProductVariant { get; set; }
+    public Cart Cart { get; set; } = null!;
+    public Product Product { get; set; } = null!;
+    public Store Store { get; set; } = null!;
 }
