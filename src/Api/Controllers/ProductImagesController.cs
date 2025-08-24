@@ -176,7 +176,6 @@ public sealed class ProductImagesController : ControllerBase
 			{
 				ProductId = productId,
 				ImageUrl = request.ImageUrl,
-				ThumbnailUrl = request.ThumbnailUrl,
 				AltText = request.AltText,
 				Title = request.Title,
 				DisplayOrder = request.DisplayOrder,
@@ -193,7 +192,6 @@ public sealed class ProductImagesController : ControllerBase
 				Id = image.Id,
 				ProductId = image.ProductId,
 				ImageUrl = image.ImageUrl,
-				ThumbnailUrl = image.ThumbnailUrl,
 				AltText = image.AltText,
 				Title = image.Title,
 				DisplayOrder = image.DisplayOrder,
@@ -269,7 +267,6 @@ public sealed class ProductImagesController : ControllerBase
 			}
 
 			image.ImageUrl = request.ImageUrl;
-			image.ThumbnailUrl = request.ThumbnailUrl;
 			image.AltText = request.AltText;
 			image.Title = request.Title;
 			image.DisplayOrder = request.DisplayOrder;
@@ -308,17 +305,19 @@ public sealed class ProductImagesController : ControllerBase
 	/// Resim sıralamasını güncelle
 	/// </summary>
 	/// <param name="productId">Ürün ID'si</param>
-	/// <param name="request">Sıralanmış resim ID'leri</param>
+	/// <param name="request">Sıralama bilgileri</param>
 	/// <returns>Güncelleme sonucu</returns>
 	/// <response code="200">Sıralama başarıyla güncellendi</response>
 	/// <response code="400">Geçersiz veri</response>
 	/// <response code="401">Yetkisiz erişim</response>
+	/// <response code="404">Ürün veya resim bulunamadı</response>
 	/// <response code="500">Sunucu hatası</response>
 	[HttpPut("order")]
 	[Authorize(Roles = "Seller,Admin")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public async Task<IActionResult> UpdateImageOrder(long productId, [FromBody] UpdateProductImageOrderRequest request)
 	{
 		try
@@ -339,19 +338,15 @@ public sealed class ProductImagesController : ControllerBase
 				return Forbid();
 
 			var images = await _unitOfWork.ProductImages.GetAllAsync();
-			var productImages = images.Where(img => img.ProductId == productId).ToList();
+			var image = images.FirstOrDefault(img => img.Id == request.ImageId && img.ProductId == productId);
+
+			if (image == null)
+				return NotFound(new { Message = "Resim bulunamadı" });
 
 			// Sıralama güncelle
-			for (int i = 0; i < request.ImageIds.Count; i++)
-			{
-				var image = productImages.FirstOrDefault(img => img.Id == request.ImageIds[i]);
-				if (image != null)
-				{
-					image.DisplayOrder = i + 1;
-					image.ModifiedAt = DateTime.UtcNow;
-					await _unitOfWork.ProductImages.UpdateAsync(image);
-				}
-			}
+			image.DisplayOrder = request.NewDisplayOrder;
+			image.ModifiedAt = DateTime.UtcNow;
+			await _unitOfWork.ProductImages.UpdateAsync(image);
 
 			await _unitOfWork.SaveChangesAsync();
 

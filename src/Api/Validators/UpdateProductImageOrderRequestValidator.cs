@@ -10,35 +10,13 @@ public sealed class UpdateProductImageOrderRequestValidator : AbstractValidator<
 {
 	public UpdateProductImageOrderRequestValidator()
 	{
-		RuleFor(x => x.ImageIds)
-			.NotEmpty().WithMessage("Resim ID listesi boş olamaz")
-			.Must(HaveUniqueIds).WithMessage("Resim ID'leri benzersiz olmalıdır")
-			.Must(HaveValidIds).WithMessage("Geçersiz resim ID'leri bulunmaktadır");
+		RuleFor(x => x.ImageId)
+			.GreaterThan(0).WithMessage("Geçerli bir resim ID'si gereklidir");
 
-		RuleFor(x => x.ImageIds.Count)
-			.GreaterThan(0).WithMessage("En az bir resim ID'si gereklidir")
-			.LessThanOrEqualTo(50).WithMessage("Maksimum 50 resim sıralanabilir");
+		RuleFor(x => x.NewDisplayOrder)
+			.GreaterThanOrEqualTo(0).WithMessage("Görüntüleme sırası 0'dan küçük olamaz")
+			.LessThanOrEqualTo(999).WithMessage("Görüntüleme sırası 999'dan küçük olmalıdır");
 	}
 
-	/// <summary>
-	/// ID'lerin benzersiz olup olmadığını kontrol et
-	/// </summary>
-	/// <param name="imageIds">Kontrol edilecek ID listesi</param>
-	/// <returns>ID'ler benzersiz mi?</returns>
-	private static bool HaveUniqueIds(List<long> imageIds)
-	{
-		if (imageIds == null) return false;
-		return imageIds.Count == imageIds.Distinct().Count();
-	}
 
-	/// <summary>
-	/// ID'lerin geçerli olup olmadığını kontrol et
-	/// </summary>
-	/// <param name="imageIds">Kontrol edilecek ID listesi</param>
-	/// <returns>ID'ler geçerli mi?</returns>
-	private static bool HaveValidIds(List<long> imageIds)
-	{
-		if (imageIds == null) return false;
-		return imageIds.All(id => id > 0);
-	}
 }

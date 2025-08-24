@@ -5,6 +5,7 @@ using Domain.Models;
 using Microsoft.Extensions.Logging;
 using Infrastructure.Persistence.Naming;
 using Application.Abstractions;
+using Application.Exceptions;
 
 namespace Infrastructure.Persistence.Repositories;
 
@@ -55,12 +56,26 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 			var sql = $"SELECT * FROM {_tableName} WHERE {_idColumn} = @Id";
 			var connection = await _dbContext.GetConnectionAsync();
 			
-			return await connection.QueryFirstOrDefaultAsync<TEntity>(sql, new { Id = id }, _dbContext.Transaction);
+			var entity = await connection.QueryFirstOrDefaultAsync<TEntity>(sql, new { Id = id }, _dbContext.Transaction);
+			
+			if (entity == null)
+			{
+				_logger.LogWarning("Entity with ID {Id} not found in {Table}", id, _tableName);
+			}
+			
+			return entity;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException && ex is not EntityNotFoundException)
 		{
-			_logger.LogError(ex, "Error getting entity by ID {Id} from {Table}", id, _tableName);
-			throw;
+			var errorMessage = $"Error getting entity by ID {id} from {_tableName}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "GetById", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "GetById", typeof(TEntity).Name, id, _tableName, ex);
 		}
 	}
 
@@ -71,12 +86,22 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 			var sql = $"SELECT * FROM {_tableName}";
 			var connection = await _dbContext.GetConnectionAsync();
 			
-			return await connection.QueryAsync<TEntity>(sql, transaction: _dbContext.Transaction);
+			var entities = await connection.QueryAsync<TEntity>(sql, transaction: _dbContext.Transaction);
+			
+			_logger.LogDebug("Retrieved {Count} entities from {Table}", entities.Count(), _tableName);
+			return entities;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException)
 		{
-			_logger.LogError(ex, "Error getting all entities from {Table}", _tableName);
-			throw;
+			var errorMessage = $"Error getting all entities from {_tableName}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "GetAll", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "GetAll", typeof(TEntity).Name, null, _tableName, ex);
 		}
 	}
 
@@ -85,12 +110,22 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 		try
 		{
 			var allEntities = await GetAllAsync();
-			return allEntities.Where(predicate);
+			var filteredEntities = allEntities.Where(predicate);
+			
+			_logger.LogDebug("Filtered entities from {Table}: {Count} found", _tableName, filteredEntities.Count());
+			return filteredEntities;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException)
 		{
-			_logger.LogError(ex, "Error getting filtered entities from {Table}", _tableName);
-			throw;
+			var errorMessage = $"Error getting filtered entities from {_tableName}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "GetFiltered", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "GetFiltered", typeof(TEntity).Name, null, _tableName, ex);
 		}
 	}
 
@@ -99,12 +134,22 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 		try
 		{
 			var allEntities = await GetAllAsync();
-			return allEntities.FirstOrDefault(predicate);
+			var firstEntity = allEntities.FirstOrDefault(predicate);
+			
+			_logger.LogDebug("GetFirst from {Table}: Entity found: {Found}", _tableName, firstEntity != null);
+			return firstEntity;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException)
 		{
-			_logger.LogError(ex, "Error getting first entity from {Table}", _tableName);
-			throw;
+			var errorMessage = $"Error getting first entity from {_tableName}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "GetFirst", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "GetFirst", typeof(TEntity).Name, null, _tableName, ex);
 		}
 	}
 
@@ -116,12 +161,22 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 			var connection = await _dbContext.GetConnectionAsync();
 			
 			var count = await connection.ExecuteScalarAsync<int>(sql, new { Id = id }, _dbContext.Transaction);
-			return count > 0;
+			var exists = count > 0;
+			
+			_logger.LogDebug("Entity with ID {Id} exists in {Table}: {Exists}", id, _tableName, exists);
+			return exists;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException)
 		{
-			_logger.LogError(ex, "Error checking existence of entity with ID {Id} in {Table}", id, _tableName);
-			throw;
+			var errorMessage = $"Error checking existence of entity with ID {id} in {_tableName}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "Exists", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "Exists", typeof(TEntity).Name, id, _tableName, ex);
 		}
 	}
 
@@ -133,16 +188,29 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 			{
 				var sql = $"SELECT COUNT(1) FROM {_tableName}";
 				var connection = await _dbContext.GetConnectionAsync();
-				return await connection.ExecuteScalarAsync<int>(sql, null, _dbContext.Transaction);
+				var count = await connection.ExecuteScalarAsync<int>(sql, null, _dbContext.Transaction);
+				
+				_logger.LogDebug("Total count in {Table}: {Count}", _tableName, count);
+				return count;
 			}
 
 			var allEntities = await GetAllAsync();
-			return allEntities.Count(predicate);
+			var filteredCount = allEntities.Count(predicate);
+			
+			_logger.LogDebug("Filtered count in {Table}: {Count}", _tableName, filteredCount);
+			return filteredCount;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException)
 		{
-			_logger.LogError(ex, "Error counting entities in {Table}", _tableName);
-			throw;
+			var errorMessage = $"Error counting entities in {_tableName}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "Count", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "Count", typeof(TEntity).Name, null, _tableName, ex);
 		}
 	}
 
@@ -166,12 +234,22 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 			var totalCount = allEntities.Count();
 			var items = allEntities.Skip((pageNumber - 1) * pageSize).Take(pageSize);
 			
+			_logger.LogDebug("Retrieved {Count} entities from {Table} (Page: {Page}, Size: {Size}, Total: {Total})", 
+				items.Count(), _tableName, pageNumber, pageSize, totalCount);
+			
 			return (items, totalCount);
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException)
 		{
-			_logger.LogError(ex, "Error getting paged entities from {Table}", _tableName);
-			throw;
+			var errorMessage = $"Error getting paged entities from {_tableName}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "GetPaged", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "GetPaged", typeof(TEntity).Name, null, _tableName, ex);
 		}
 	}
 
@@ -202,10 +280,17 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 			_logger.LogInformation("Added entity with ID {Id} to {Table}", id, _tableName);
 			return entity;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException)
 		{
-			_logger.LogError(ex, "Error adding entity to {Table}", _tableName);
-			throw;
+			var errorMessage = $"Error adding entity to {_tableName}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "Add", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "Add", typeof(TEntity).Name, null, _tableName, ex);
 		}
 	}
 
@@ -214,19 +299,30 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 		try
 		{
 			var results = new List<TEntity>();
-			foreach (var entity in entities)
+			var entityList = entities.ToList();
+			
+			_logger.LogDebug("Starting to add {Count} entities to {Table}", entityList.Count, _tableName);
+			
+			foreach (var entity in entityList)
 			{
 				var result = await AddAsync(entity);
 				results.Add(result);
 			}
 			
-			_logger.LogInformation("Added {Count} entities to {Table}", results.Count, _tableName);
+			_logger.LogInformation("Successfully added {Count} entities to {Table}", results.Count, _tableName);
 			return results;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException)
 		{
-			_logger.LogError(ex, "Error adding multiple entities to {Table}", _tableName);
-			throw;
+			var errorMessage = $"Error adding multiple entities to {_tableName}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "AddRange", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "AddRange", typeof(TEntity).Name, null, _tableName, ex);
 		}
 	}
 
@@ -246,15 +342,26 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 			var rowsAffected = await connection.ExecuteAsync(sql, entity, _dbContext.Transaction);
 			
 			if (rowsAffected == 0)
-				throw new InvalidOperationException($"Entity with ID {entity.Id} not found in {_tableName}");
+			{
+				var errorMessage = $"Entity with ID {entity.Id} not found in {_tableName}";
+				_logger.LogWarning(errorMessage);
+				throw new EntityNotFoundException(typeof(TEntity).Name, entity.Id, errorMessage, _tableName);
+			}
 			
 			_logger.LogInformation("Updated entity with ID {Id} in {Table}", entity.Id, _tableName);
 			return entity;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException && ex is not EntityNotFoundException)
 		{
-			_logger.LogError(ex, "Error updating entity with ID {Id} in {Table}", entity.Id, _tableName);
-			throw;
+			var errorMessage = $"Error updating entity with ID {entity.Id} in {_tableName}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "Update", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "Update", typeof(TEntity).Name, entity.Id, _tableName, ex);
 		}
 	}
 
@@ -273,12 +380,20 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 				return true;
 			}
 			
+			_logger.LogWarning("Entity with ID {Id} not found for deletion in {Table}", id, _tableName);
 			return false;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException)
 		{
-			_logger.LogError(ex, "Error deleting entity with ID {Id} from {Table}", id, _tableName);
-			throw;
+			var errorMessage = $"Error deleting entity with ID {id} from {_tableName}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "Delete", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "Delete", typeof(TEntity).Name, id, _tableName, ex);
 		}
 	}
 
@@ -292,21 +407,31 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 		try
 		{
 			var entitiesToDelete = await GetAsync(predicate);
-			var count = 0;
+			var entityList = entitiesToDelete.ToList();
 			
-			foreach (var entity in entitiesToDelete)
+			_logger.LogDebug("Starting to delete {Count} entities from {Table}", entityList.Count, _tableName);
+			
+			var count = 0;
+			foreach (var entity in entityList)
 			{
 				if (await DeleteAsync(entity.Id))
 					count++;
 			}
 			
-			_logger.LogInformation("Deleted {Count} entities from {Table}", count, _tableName);
+			_logger.LogInformation("Successfully deleted {Count} entities from {Table}", count, _tableName);
 			return count;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException)
 		{
-			_logger.LogError(ex, "Error deleting multiple entities from {Table}", _tableName);
-			throw;
+			var errorMessage = $"Error deleting multiple entities from {_tableName}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "DeleteRange", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "DeleteRange", typeof(TEntity).Name, null, _tableName, ex);
 		}
 	}
 
@@ -319,12 +444,22 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 		try
 		{
 			var connection = await _dbContext.GetConnectionAsync();
-			return await connection.ExecuteAsync(sql, param, _dbContext.Transaction);
+			var rowsAffected = await connection.ExecuteAsync(sql, param, _dbContext.Transaction);
+			
+			_logger.LogDebug("Executed SQL: {Sql}, Rows affected: {RowsAffected}", sql, rowsAffected);
+			return rowsAffected;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException)
 		{
-			_logger.LogError(ex, "Error executing SQL: {Sql}", sql);
-			throw;
+			var errorMessage = $"Error executing SQL: {sql}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "Execute", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "Execute", typeof(TEntity).Name, null, _tableName, ex);
 		}
 	}
 
@@ -333,12 +468,22 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 		try
 		{
 			var connection = await _dbContext.GetConnectionAsync();
-			return await connection.QueryAsync<TResult>(sql, param, _dbContext.Transaction);
+			var results = await connection.QueryAsync<TResult>(sql, param, _dbContext.Transaction);
+			
+			_logger.LogDebug("Query executed: {Sql}, Results count: {Count}", sql, results.Count());
+			return results;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException)
 		{
-			_logger.LogError(ex, "Error querying SQL: {Sql}", sql);
-			throw;
+			var errorMessage = $"Error querying SQL: {sql}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "Query", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "Query", typeof(TEntity).Name, null, _tableName, ex);
 		}
 	}
 
@@ -347,12 +492,22 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 		try
 		{
 			var connection = await _dbContext.GetConnectionAsync();
-			return await connection.QueryFirstOrDefaultAsync<TResult>(sql, param, _dbContext.Transaction);
+			var result = await connection.QueryFirstOrDefaultAsync<TResult>(sql, param, _dbContext.Transaction);
+			
+			_logger.LogDebug("QueryFirstOrDefault executed: {Sql}, Result found: {Found}", sql, result != null);
+			return result;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException)
 		{
-			_logger.LogError(ex, "Error querying first or default: {Sql}", sql);
-			throw;
+			var errorMessage = $"Error querying first or default: {sql}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "QueryFirstOrDefault", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "QueryFirstOrDefault", typeof(TEntity).Name, null, _tableName, ex);
 		}
 	}
 
@@ -361,12 +516,22 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, I
 		try
 		{
 			var connection = await _dbContext.GetConnectionAsync();
-			return await connection.QuerySingleAsync<TResult>(sql, param, _dbContext.Transaction);
+			var result = await connection.QuerySingleAsync<TResult>(sql, param, _dbContext.Transaction);
+			
+			_logger.LogDebug("QuerySingle executed: {Sql}, Result found: {Found}", sql, result != null);
+			return result;
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not RepositoryException)
 		{
-			_logger.LogError(ex, "Error querying single: {Sql}", sql);
-			throw;
+			var errorMessage = $"Error querying single: {sql}";
+			_logger.LogError(ex, errorMessage);
+			
+			if (ex is InvalidOperationException || ex is TimeoutException)
+			{
+				throw new DatabaseConnectionException(errorMessage, "QuerySingle", null, null, null, ex);
+			}
+			
+			throw new RepositoryException(errorMessage, "QuerySingle", typeof(TEntity).Name, null, _tableName, ex);
 		}
 	}
 

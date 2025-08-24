@@ -15,10 +15,7 @@ public sealed class UpdateProductImageRequestValidator : AbstractValidator<Updat
 			.MaximumLength(500).WithMessage("Resim URL'si en fazla 500 karakter olabilir")
 			.Must(BeValidUrl).WithMessage("Geçerli bir resim URL'si giriniz");
 
-		RuleFor(x => x.ThumbnailUrl)
-			.MaximumLength(500).WithMessage("Thumbnail URL'si en fazla 500 karakter olabilir")
-			.Must(BeValidUrl).WithMessage("Geçerli bir thumbnail URL'si giriniz")
-			.When(x => !string.IsNullOrWhiteSpace(x.ThumbnailUrl));
+
 
 		RuleFor(x => x.AltText)
 			.MaximumLength(200).WithMessage("Alt text en fazla 200 karakter olabilir")
