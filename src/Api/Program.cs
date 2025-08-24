@@ -1,5 +1,6 @@
 using Serilog;
 using Api.Configuration;
+using Api.Middlewares;
 using Application.Services;
 using Application.Validation;
 using Infrastructure;
@@ -73,9 +74,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseSerilogRequestLogging();
+
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Custom Middlewares - ORDER MATTERS! (Exception handling en son)
+app.UseMiddleware<ModelValidationMiddleware>();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.MapControllers();
 app.MapHealthChecks("/health");

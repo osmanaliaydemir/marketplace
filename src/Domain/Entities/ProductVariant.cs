@@ -9,7 +9,7 @@ public sealed class ProductVariant : Domain.Models.AuditableEntity
     public string VariantName { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public decimal? CompareAtPrice { get; set; }
-    public int? StockQty { get; set; }
+    public int StockQty { get; set; }
     public int ReservedQty { get; set; } = 0;
     public int MinOrderQty { get; set; } = 1;
     public int MaxOrderQty { get; set; } = 999;

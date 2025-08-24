@@ -40,6 +40,7 @@ public static class PersistenceRegistration
 		services.AddScoped<IStoreRepository, StoreRepository>();
 		services.AddScoped<ICartRepository, CartRepository>();
 		services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+		services.AddScoped<IExceptionLogRepository, ExceptionLogRepository>();
 		services.AddScoped<IOrderService, OrderService>();
 		
 		// Services

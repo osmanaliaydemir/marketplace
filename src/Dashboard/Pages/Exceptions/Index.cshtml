@@ -1,0 +1,342 @@
+@page
+@model Dashboard.Pages.Exceptions.IndexModel
+@{
+    ViewData["Title"] = "Exception Dashboard";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4">Exception Dashboard</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Filtreler</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label asp-for="StartDate" class="form-label">Başlangıç Tarihi</label>
+                    <input asp-for="StartDate" type="date" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="EndDate" class="form-label">Bitiş Tarihi</label>
+                    <input asp-for="EndDate" type="date" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="SeverityFilter" class="form-label">Severity</label>
+                    <select asp-for="SeverityFilter" class="form-select">
+                        <option value="">Tümü</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="StatusFilter" class="form-label">Status</label>
+                    <select asp-for="StatusFilter" class="form-select">
+                        <option value="">Tümü</option>
+                        <option value="New">New</option>
+                        <option value="Investigating">Investigating</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Ignored">Ignored</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Filtrele</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Toplam Exception</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalExceptions</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Çözülmemiş</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.UnresolvedExceptions</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Kritik</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.CriticalExceptions</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Son 24 Saat</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Exceptions.Count(e => e.OccurredAt >= DateTime.UtcNow.AddHours(-24))</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exception List -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Son Exception'lar</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="exceptionsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Message</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                            <th>Path</th>
+                            <th>Occurred</th>
+                            <th>Count</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var exception in Model.Exceptions)
+                        {
+                            <tr>
+                                <td>@exception.Id</td>
+                                <td>
+                                    <span class="badge bg-secondary">@exception.ExceptionType</span>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 200px;" title="@exception.Message">
+                                        @exception.Message
+                                    </div>
+                                </td>
+                                <td>
+                                    @{
+                                        var severityClass = exception.Severity switch
+                                        {
+                                            "Low" => "bg-success",
+                                            "Medium" => "bg-warning",
+                                            "High" => "bg-danger",
+                                            "Critical" => "bg-dark",
+                                            _ => "bg-secondary"
+                                        };
+                                    }
+                                    <span class="badge @severityClass">@exception.Severity</span>
+                                </td>
+                                <td>
+                                    @{
+                                        var statusClass = exception.Status switch
+                                        {
+                                            "New" => "bg-primary",
+                                            "Investigating" => "bg-info",
+                                            "Resolved" => "bg-success",
+                                            "Ignored" => "bg-secondary",
+                                            _ => "bg-secondary"
+                                        };
+                                    }
+                                    <span class="badge @statusClass">@exception.Status</span>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(exception.RequestPath))
+                                    {
+                                        <small class="text-muted">@exception.RequestMethod @exception.RequestPath</small>
+                                    }
+                                </td>
+                                <td>
+                                    <small>@exception.OccurredAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                </td>
+                                <td>
+                                    @if (exception.OccurrenceCount > 1)
+                                    {
+                                        <span class="badge bg-warning">@exception.OccurrenceCount</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">1</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        @if (exception.Status != "Resolved" && exception.Status != "Ignored")
+                                        {
+                                            <form method="post" asp-page-handler="Resolve" asp-route-id="@exception.Id" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-success" 
+                                                        onclick="return confirm('Bu exception\'ı çözüldü olarak işaretlemek istediğinizden emin misiniz?')">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                            <form method="post" asp-page-handler="Ignore" asp-route-id="@exception.Id" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-secondary" 
+                                                        onclick="return confirm('Bu exception\'ı göz ardı etmek istediğinizden emin misiniz?')">
+                                                    <i class="fas fa-eye-slash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        <button type="button" class="btn btn-sm btn-info" 
+                                                onclick="showExceptionDetails(@Json.Serialize(exception))">
+                                            <i class="fas fa-info-circle"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exception Details Modal -->
+<div class="modal fade" id="exceptionDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Exception Detayları</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="exceptionDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showExceptionDetails(exception) {
+            const content = document.getElementById('exceptionDetailsContent');
+            content.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Exception Bilgileri</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>ID:</strong></td><td>${exception.id}</td></tr>
+                            <tr><td><strong>Type:</strong></td><td>${exception.exceptionType}</td></tr>
+                            <tr><td><strong>Message:</strong></td><td>${exception.message}</td></tr>
+                            <tr><td><strong>Severity:</strong></td><td><span class="badge bg-${getSeverityClass(exception.severity)}">${exception.severity}</span></td></tr>
+                            <tr><td><strong>Status:</strong></td><td><span class="badge bg-${getStatusClass(exception.status)}">${exception.status}</span></td></tr>
+                            <tr><td><strong>Occurrence Count:</strong></td><td>${exception.occurrenceCount}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Request Bilgileri</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Path:</strong></td><td>${exception.requestPath || 'N/A'}</td></tr>
+                            <tr><td><strong>Method:</strong></td><td>${exception.requestMethod || 'N/A'}</td></tr>
+                            <tr><td><strong>IP Address:</strong></td><td>${exception.ipAddress || 'N/A'}</td></tr>
+                            <tr><td><strong>User ID:</strong></td><td>${exception.userId || 'N/A'}</td></tr>
+                            <tr><td><strong>Occurred At:</strong></td><td>${new Date(exception.occurredAt).toLocaleString()}</td></tr>
+                            <tr><td><strong>Last Occurrence:</strong></td><td>${new Date(exception.lastOccurrence).toLocaleString()}</td></tr>
+                        </table>
+                    </div>
+                </div>
+                ${exception.stackTrace ? `
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Stack Trace</h6>
+                        <pre class="bg-light p-3" style="max-height: 200px; overflow-y: auto;">${exception.stackTrace}</pre>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('exceptionDetailsModal'));
+            modal.show();
+        }
+
+        function getSeverityClass(severity) {
+            switch (severity) {
+                case 'Low': return 'success';
+                case 'Medium': return 'warning';
+                case 'High': return 'danger';
+                case 'Critical': return 'dark';
+                default: return 'secondary';
+            }
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'New': return 'primary';
+                case 'Investigating': return 'info';
+                case 'Resolved': return 'success';
+                case 'Ignored': return 'secondary';
+                default: return 'secondary';
+            }
+        }
+
+        // DataTable initialization
+        $(document).ready(function() {
+            $('#exceptionsTable').DataTable({
+                order: [[6, 'desc']], // Sort by occurred date descending
+                pageLength: 25,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+                }
+            });
+        });
+    </script>
+}

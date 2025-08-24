@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Infrastructure.Persistence.Repositories;
 using Domain.Entities;
-using Api.DTOs.Products;
+using Application.DTOs.Products;
 
 namespace Api.Controllers;
 

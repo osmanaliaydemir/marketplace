@@ -10,4 +10,8 @@
     <PackageReference Include="bootstrap" Version="5.3.7" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Application.csproj" />
+  </ItemGroup>
+
 </Project>

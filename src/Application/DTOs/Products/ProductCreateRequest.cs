@@ -39,7 +39,7 @@ public sealed record ProductCreateRequest
     public decimal Weight { get; init; }
     
     [Range(1, int.MaxValue, ErrorMessage = "Minimum sipariş miktarı 1'den küçük olamaz")]
-    public int MinOrderQty { get; init; } = 1;
+    public int? MinOrderQty { get; init; } = 1;
     
     [Range(1, int.MaxValue, ErrorMessage = "Maksimum sipariş miktarı 1'den küçük olamaz")]
     public int? MaxOrderQty { get; init; }
@@ -62,4 +62,7 @@ public sealed record ProductCreateRequest
     public bool IsActive { get; init; } = true;
     public bool IsFeatured { get; init; } = false;
     public bool IsPublished { get; init; } = false;
+    
+    public List<ProductVariantDto> Variants { get; init; } = new();
+    public List<ProductImageDto> Images { get; init; } = new();
 }

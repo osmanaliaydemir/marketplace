@@ -213,6 +213,12 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Exceptions") == true ? "active" : "")" asp-page="/Exceptions/Index">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>Hata Logları</span>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Settings") == true ? "active" : "")" asp-page="/Settings/Index">
                     <i class="bi bi-gear"></i>
                     <span>Ayarlar</span>

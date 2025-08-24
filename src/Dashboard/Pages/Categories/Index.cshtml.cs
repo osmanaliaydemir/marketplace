@@ -1,6 +1,7 @@
 using Dashboard.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Application.DTOs.Categories;
 
 namespace Dashboard.Pages.Categories;
 
@@ -103,23 +104,4 @@ public sealed class CategorySearchResponse
 	public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
 }
 
-public sealed class CategoryDto
-{
-	public long Id { get; set; }
-	public long? ParentId { get; set; }
-	public string Name { get; set; } = string.Empty;
-	public string Slug { get; set; } = string.Empty;
-	public string? Description { get; set; }
-	public string? ImageUrl { get; set; }
-	public string? IconClass { get; set; }
-	public bool IsActive { get; set; }
-	public bool IsFeatured { get; set; }
-	public int DisplayOrder { get; set; }
-	public string? MetaTitle { get; set; }
-	public string? MetaDescription { get; set; }
-	public DateTime CreatedAt { get; set; }
-	public DateTime? ModifiedAt { get; set; }
-	public string? ParentName { get; set; }
-	public int ProductCount { get; set; }
-	public int ChildrenCount { get; set; }
-}
+// DTO'lar Application layer'dan geliyor, burada tekrar tanımlanmamalı

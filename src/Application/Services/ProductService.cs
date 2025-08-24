@@ -60,8 +60,8 @@ public sealed class ProductService : IProductService
                 CompareAtPrice = request.CompareAtPrice,
                 Currency = request.Currency ?? "TRY",
                 StockQty = request.StockQty,
-                Weight = (decimal)request.Weight,
-                MinOrderQty = request.MinOrderQty,
+                Weight = request.Weight,
+                MinOrderQty = request.MinOrderQty ?? 1,
                 MaxOrderQty = request.MaxOrderQty ?? 999,
                 IsActive = true,
                 IsPublished = false, // Default to unpublished
@@ -108,8 +108,8 @@ public sealed class ProductService : IProductService
             existingProduct.Price = request.Price;
             existingProduct.CompareAtPrice = request.CompareAtPrice;
             existingProduct.StockQty = request.StockQty;
-            existingProduct.Weight = (decimal)request.Weight;
-            existingProduct.MinOrderQty = request.MinOrderQty;
+            existingProduct.Weight = request.Weight;
+            existingProduct.MinOrderQty = request.MinOrderQty ?? 1;
             existingProduct.MaxOrderQty = request.MaxOrderQty ?? 999;
             existingProduct.DisplayOrder = request.DisplayOrder;
             existingProduct.MetaTitle = request.MetaTitle ?? request.Name;
@@ -795,7 +795,7 @@ public sealed class ProductService : IProductService
             CompareAtPrice = product.CompareAtPrice,
             Currency = product.Currency,
             StockQty = product.StockQty ?? 0,
-            Weight = (int)product.Weight,
+            Weight = product.Weight,
             MinOrderQty = product.MinOrderQty,
             MaxOrderQty = product.MaxOrderQty,
             IsActive = product.IsActive,

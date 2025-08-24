@@ -16,7 +16,10 @@ public static class ServiceRegistration
 		services.AddScoped<ICartService, CartService>();
 		services.AddScoped<IPaymentService, PaymentService>();
 		services.AddScoped<IInventoryService, InventoryService>();
+		services.AddScoped<IExceptionLogService, ExceptionLogService>();
 
+		// Business Rule Validators
+		services.AddScoped<BusinessRuleValidator>();
 		
 		return services;
 	}

@@ -1,3 +1,7 @@
+using Application.DTOs.Categories;
+using Application.DTOs.Stores;
+using Application.DTOs.Sellers;
+
 namespace Application.DTOs.Products;
 
 public sealed record ProductDetailDto
@@ -9,8 +13,6 @@ public sealed record ProductDetailDto
     public string? ShortDescription { get; init; }
     public long CategoryId { get; init; }
     public string CategoryName { get; init; } = string.Empty;
-    public long? CategoryParentId { get; init; }
-    public string? CategoryParentName { get; init; }
     public long StoreId { get; init; }
     public string StoreName { get; init; } = string.Empty;
     public long SellerId { get; init; }
@@ -19,8 +21,6 @@ public sealed record ProductDetailDto
     public decimal? CompareAtPrice { get; init; }
     public string Currency { get; init; } = "TRY";
     public int StockQty { get; init; }
-    public int ReservedQty { get; init; }
-    public int AvailableQty { get; init; }
     public bool IsActive { get; init; }
     public bool IsFeatured { get; init; }
     public bool IsPublished { get; init; }
@@ -36,12 +36,15 @@ public sealed record ProductDetailDto
     public DateTime? ModifiedAt { get; init; }
     
     // Related Data
+    public CategoryDto? Category { get; init; }
+    public StoreDto? Store { get; init; }
+    public SellerDto? Seller { get; init; }
     public IEnumerable<ProductVariantDto> Variants { get; init; } = Enumerable.Empty<ProductVariantDto>();
     public IEnumerable<ProductImageDto> Images { get; init; } = Enumerable.Empty<ProductImageDto>();
     
     // Calculated Properties
     public decimal? DiscountPercentage { get; init; }
     public bool HasDiscount => CompareAtPrice.HasValue && CompareAtPrice > Price;
-    public bool IsInStock => AvailableQty > 0;
-    public bool IsLowStock => AvailableQty > 0 && AvailableQty <= 10;
-}
+    public bool IsInStock => StockQty > 0;
+    public bool IsLowStock => StockQty > 0 && StockQty <= 10;
+} 

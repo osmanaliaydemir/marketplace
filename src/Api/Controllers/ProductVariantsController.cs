@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Infrastructure.Persistence.Repositories;
 using Domain.Entities;
-using Api.DTOs.Products;
+using Application.DTOs.Products;
 
 namespace Api.Controllers;
 
@@ -194,8 +194,8 @@ public sealed class ProductVariantsController : ControllerBase
 				Price = request.Price,
 				CompareAtPrice = request.CompareAtPrice,
 				StockQty = request.StockQty,
-				MinOrderQty = request.MinOrderQty,
-				MaxOrderQty = request.MaxOrderQty,
+				MinOrderQty = request.MinOrderQty ?? 1,
+				MaxOrderQty = request.MaxOrderQty ?? 999,
 				DisplayOrder = request.DisplayOrder,
 				IsDefault = request.IsDefault,
 				Weight = request.Weight,
@@ -298,8 +298,8 @@ public sealed class ProductVariantsController : ControllerBase
 			variant.Price = request.Price;
 			variant.CompareAtPrice = request.CompareAtPrice;
 			variant.StockQty = request.StockQty;
-			variant.MinOrderQty = request.MinOrderQty;
-			variant.MaxOrderQty = request.MaxOrderQty;
+			variant.MinOrderQty = request.MinOrderQty ?? 1;
+			variant.MaxOrderQty = request.MaxOrderQty ?? 999;
 			variant.DisplayOrder = request.DisplayOrder;
 			variant.IsDefault = request.IsDefault;
 			variant.IsActive = request.IsActive;

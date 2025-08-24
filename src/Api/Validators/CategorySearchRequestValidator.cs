@@ -1,5 +1,5 @@
 using FluentValidation;
-using Api.DTOs.Products;
+using Application.DTOs.Categories;
 
 namespace Api.Validators;
 

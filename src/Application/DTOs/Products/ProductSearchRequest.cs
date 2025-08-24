@@ -19,4 +19,4 @@ public sealed record ProductSearchRequest
     public bool IncludeImages { get; init; } = true;
     public string? Brand { get; init; }
     public string? Tags { get; init; }
-}
+} 

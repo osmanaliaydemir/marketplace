@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Infrastructure.Persistence.Repositories;
 using Domain.Entities;
-using Api.DTOs.Products;
+using Application.DTOs.Categories;
 using System.Text.RegularExpressions;
 
 namespace Api.Controllers;
@@ -39,8 +39,9 @@ public sealed class CategoriesController : ControllerBase
 	{
 		try
 		{
-			if (request.Page < 1) request.Page = 1;
-			if (request.PageSize < 1 || request.PageSize > 200) request.PageSize = 50;
+			// Page ve PageSize validation - init property'ler olduğu için atama yapılamıyor
+			var page = request.Page < 1 ? 1 : request.Page;
+			var pageSize = request.PageSize < 1 || request.PageSize > 200 ? 50 : request.PageSize;
 
 			var categories = await _unitOfWork.Categories.GetAllAsync();
 
@@ -78,7 +79,7 @@ public sealed class CategoriesController : ControllerBase
 			};
 
 			var totalCount = query.Count();
-			var pageItems = query.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList();
+			var pageItems = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
 			var result = new CategorySearchResponse
 			{
@@ -101,8 +102,8 @@ public sealed class CategoriesController : ControllerBase
 					ProductCount = 0
 				}).ToList(),
 				TotalCount = totalCount,
-				Page = request.Page,
-				PageSize = request.PageSize
+				Page = page,
+				PageSize = pageSize
 			};
 
 			return Ok(result);

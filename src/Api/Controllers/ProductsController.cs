@@ -1,9 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Api.DTOs.Products;
+using Application.DTOs.Products;
+using Application.DTOs.Categories;
+using Application.DTOs.Stores;
+using Application.DTOs.Sellers;
+using Application.DTOs.Users;
 using Infrastructure.Persistence.Repositories;
 using Domain.Entities;
 using System.Text.RegularExpressions;
+using ApiProductDtos = Api.DTOs.Products;
 
 namespace Api.Controllers;
 
@@ -27,7 +32,7 @@ public sealed class ProductsController : ControllerBase
     /// </summary>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<ProductSearchResponse>> GetProducts([FromQuery] ProductSearchRequest request)
+    public async Task<ActionResult<ApiProductDtos.ProductSearchResponse>> GetProducts([FromQuery] ApiProductDtos.ProductSearchRequest request)
     {
         try
         {
@@ -106,7 +111,7 @@ public sealed class ProductsController : ControllerBase
                 .ToList();
 
             // DTO'ya dönüştür
-            var productDtos = pagedProducts.Select(p => new ProductListDto
+            var productDtos = pagedProducts.Select(p => new ApiProductDtos.ProductListDto
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -124,7 +129,7 @@ public sealed class ProductsController : ControllerBase
                 CreatedAt = p.CreatedAt
             }).ToList();
 
-            var response = new ProductSearchResponse
+            var response = new ApiProductDtos.ProductSearchResponse
             {
                 Products = productDtos,
                 TotalCount = totalCount,
@@ -188,7 +193,7 @@ public sealed class ProductsController : ControllerBase
                 IsActive = product.IsActive,
                 IsFeatured = product.IsFeatured,
                 IsPublished = product.IsPublished,
-                Weight = (int)product.Weight,
+                Weight = product.Weight,
                 MinOrderQty = product.MinOrderQty,
                 MaxOrderQty = product.MaxOrderQty,
                 MetaTitle = product.MetaTitle,
@@ -294,27 +299,11 @@ public sealed class ProductsController : ControllerBase
     /// </summary>
     [HttpPost]
     [Authorize(Roles = "Seller,Admin")]
-    public async Task<ActionResult<ProductDetailDto>> CreateProduct([FromBody] CreateProductRequest request)
+    public async Task<ActionResult<ProductDetailDto>> CreateProduct([FromBody] ProductCreateRequest request)
     {
         try
         {
             _logger.LogInformation("Creating new product: {ProductName}", request.Name);
-
-            // Validation
-            if (string.IsNullOrWhiteSpace(request.Name))
-            {
-                return BadRequest(new { Message = "Ürün adı gereklidir" });
-            }
-
-            if (request.Price <= 0)
-            {
-                return BadRequest(new { Message = "Geçerli bir fiyat giriniz" });
-            }
-
-            if (request.StockQty < 0)
-            {
-                return BadRequest(new { Message = "Stok miktarı negatif olamaz" });
-            }
 
             // Slug oluştur
             var slug = GenerateSlug(request.Name);
@@ -385,8 +374,8 @@ public sealed class ProductsController : ControllerBase
                         Price = variantRequest.Price,
                         CompareAtPrice = variantRequest.CompareAtPrice,
                         StockQty = variantRequest.StockQty,
-                        MinOrderQty = variantRequest.MinOrderQty,
-                        MaxOrderQty = variantRequest.MaxOrderQty,
+                        MinOrderQty = variantRequest.MinOrderQty ?? 1,
+                        MaxOrderQty = variantRequest.MaxOrderQty ?? 999,
                         IsDefault = variantRequest.IsDefault,
                         Weight = variantRequest.Weight,
                         IsActive = true,
@@ -430,7 +419,7 @@ public sealed class ProductsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating product: {ProductName}", request.Name);
-            return StatusCode(500, new { Message = "Ürün oluşturulurken bir hata oluştu" });
+            throw; // Global middleware handle edecek
         }
     }
 
@@ -511,7 +500,7 @@ public sealed class ProductsController : ControllerBase
     /// </summary>
     [HttpPatch("{id}/status")]
     [Authorize(Roles = "Seller,Admin")]
-    public async Task<ActionResult> UpdateProductStatus(long id, [FromBody] UpdateProductStatusRequest request)
+    public async Task<ActionResult> UpdateProductStatus(long id, [FromBody] ApiProductDtos.UpdateProductStatusRequest request)
     {
         try
         {

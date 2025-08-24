@@ -32,17 +32,21 @@ public sealed record ProductUpdateRequest
     [Range(0, int.MaxValue, ErrorMessage = "Stok miktarı 0'dan küçük olamaz")]
     public int StockQty { get; init; }
     
-    [Range(0, int.MaxValue, ErrorMessage = "Ağırlık 0'dan küçük olamaz")]
-    public int Weight { get; init; }
+    [Range(0, double.MaxValue, ErrorMessage = "Ağırlık 0'dan küçük olamaz")]
+    public decimal Weight { get; init; }
     
     [Range(1, int.MaxValue, ErrorMessage = "Minimum sipariş miktarı 1'den küçük olamaz")]
-    public int MinOrderQty { get; init; } = 1;
+    public int? MinOrderQty { get; init; } = 1;
     
     [Range(1, int.MaxValue, ErrorMessage = "Maksimum sipariş miktarı 1'den küçük olamaz")]
     public int? MaxOrderQty { get; init; }
     
     [Range(0, int.MaxValue, ErrorMessage = "Display order 0'dan küçük olamaz")]
     public int DisplayOrder { get; init; } = 0;
+    
+    public bool IsActive { get; init; }
+    public bool IsFeatured { get; init; }
+    public bool IsPublished { get; init; }
     
     [StringLength(255, ErrorMessage = "Meta başlık en fazla 255 karakter olabilir")]
     public string? MetaTitle { get; init; }
@@ -52,8 +56,4 @@ public sealed record ProductUpdateRequest
     
     [StringLength(500, ErrorMessage = "Meta anahtar kelimeler en fazla 500 karakter olabilir")]
     public string? MetaKeywords { get; init; }
-    
-    public bool IsActive { get; init; } = true;
-    public bool IsFeatured { get; init; } = false;
-    public bool IsPublished { get; init; } = false;
 }
