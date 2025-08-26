@@ -1,261 +1,310 @@
+using Microsoft.AspNetCore.Mvc;
 using Application.DTOs.Stores;
 using Application.Abstractions;
-using Domain.Entities;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using FluentValidation;
+using Application.Services;
 
-namespace Api.Controllers;
-
-[ApiController]
-[Route("api/store-applications")]
-public sealed class StoreApplicationsController : ControllerBase
+namespace Api.Controllers
 {
-	private readonly IStoreApplicationService _service;
-	private readonly IValidator<StoreApplicationCreateRequest> _validator;
+    [ApiController]
+    [Route("api/[controller]")]
+    public class StoreApplicationsController : ControllerBase
+    {
+        private readonly IStoreApplicationService _storeApplicationService;
+        private readonly ILogger<StoreApplicationsController> _logger;
 
-	public StoreApplicationsController(
-		IStoreApplicationService service,
-		IValidator<StoreApplicationCreateRequest> validator)
-	{
-		_service = service;
-		_validator = validator;
-	}
+        public StoreApplicationsController(
+            IStoreApplicationService storeApplicationService,
+            ILogger<StoreApplicationsController> logger)
+        {
+            _storeApplicationService = storeApplicationService;
+            _logger = logger;
+        }
 
-	[HttpPost]
-	[Authorize(Roles = "Customer,Admin")]
-	public async Task<ActionResult<StoreApplicationDetailDto>> Submit([FromBody] StoreApplicationCreateRequest req)
-	{
-		// Validation
-		var validationResult = await _validator.ValidateAsync(req);
-		if (!validationResult.IsValid)
-		{
-			var errors = validationResult.Errors.Select(e => new { Field = e.PropertyName, Message = e.ErrorMessage });
-			return BadRequest(new { Errors = errors });
-		}
+        /// <summary>
+        /// Yeni mağaza başvurusu oluşturur
+        /// </summary>
+        [HttpPost]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> CreateApplication([FromBody] StoreApplicationCreateRequest request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { 
+                        success = false, 
+                        message = "Geçersiz veri", 
+                        errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) 
+                    });
+                }
 
-		try
-		{
-			var entity = new StoreApplication
-			{
-				StoreName = req.StoreName,
-				Slug = req.Slug,
-				ContactEmail = req.ContactEmail,
-				ContactPhone = req.ContactPhone,
-				Description = req.Description,
-				BusinessAddress = req.BusinessAddress,
-				TaxNumber = req.TaxNumber
-			};
+                var result = await _storeApplicationService.CreateApplicationAsync(request);
+                
+                if (result.IsSuccess)
+                {
+                    _logger.LogInformation("Mağaza başvurusu oluşturuldu: {BusinessName}", request.BusinessName);
+                    
+                    return Ok(new { 
+                        success = true, 
+                        message = "Mağaza başvurusu başarıyla oluşturuldu",
+                        data = result.Data
+                    });
+                }
+                else
+                {
+                    _logger.LogWarning("Mağaza başvurusu oluşturulamadı: {BusinessName}, Hata: {Error}", 
+                        request.BusinessName, result.ErrorMessage);
+                    
+                    return BadRequest(new { 
+                        success = false, 
+                        message = result.ErrorMessage ?? "Mağaza başvurusu oluşturulamadı" 
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Mağaza başvurusu oluşturulurken hata oluştu: {BusinessName}", request.BusinessName);
+                
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin." 
+                });
+            }
+        }
 
-			var created = await _service.SubmitAsync(entity);
-			var dto = new StoreApplicationDetailDto
-			{
-				Id = created.Id,
-				StoreName = created.StoreName,
-				Slug = created.Slug,
-				Description = created.Description,
-				ContactEmail = created.ContactEmail,
-				ContactPhone = created.ContactPhone,
-				BusinessAddress = created.BusinessAddress,
-				TaxNumber = created.TaxNumber,
-				Status = created.Status.ToString(),
-				CreatedAt = created.CreatedAt
-			};
-			return CreatedAtAction(nameof(GetById), new { id = created.Id }, dto);
-		}
-		catch (Exception ex)
-		{
-			return StatusCode(500, new { Message = "Mağaza başvurusu oluşturulurken bir hata oluştu", Error = ex.Message });
-		}
-	}
+        /// <summary>
+        /// Mağaza başvurularını listeler (Admin için)
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetApplications([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                var result = await _storeApplicationService.GetApplicationsAsync(page, pageSize);
+                
+                return Ok(new { 
+                    success = true, 
+                    data = result,
+                    pagination = new {
+                        page,
+                        pageSize,
+                        totalCount = result.Count(),
+                        totalPages = (int)Math.Ceiling((double)result.Count() / pageSize)
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Mağaza başvuruları alınırken hata oluştu");
+                
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Sunucu hatası oluştu" 
+                });
+            }
+        }
 
-	[HttpGet("pending")]
-	[Authorize(Roles = "Admin")]
-	public async Task<ActionResult<IEnumerable<StoreApplicationListDto>>> ListPending()
-	{
-		try
-		{
-			var list = await _service.ListPendingAsync();
-			var dtos = list.Select(x => new StoreApplicationListDto
-			{
-				Id = x.Id,
-				StoreName = x.StoreName,
-				Slug = x.Slug,
-				ContactEmail = x.ContactEmail,
-				Status = x.Status.ToString(),
-				CreatedAt = x.CreatedAt
-			});
-			return Ok(dtos);
-		}
-		catch (Exception ex)
-		{
-			return StatusCode(500, new { Message = "Bekleyen başvurular listelenirken bir hata oluştu", Error = ex.Message });
-		}
-	}
+        /// <summary>
+        /// Belirli bir mağaza başvurusunu getirir
+        /// </summary>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetApplication(long id)
+        {
+            try
+            {
+                var result = await _storeApplicationService.GetApplicationByIdAsync(id);
+                
+                if (result.IsSuccess && result.Data != null)
+                {
+                    return Ok(new { 
+                        success = true, 
+                        data = result.Data 
+                    });
+                }
+                else
+                {
+                    return NotFound(new { 
+                        success = false, 
+                        message = "Mağaza başvurusu bulunamadı" 
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Mağaza başvurusu alınırken hata oluştu: {Id}", id);
+                
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Sunucu hatası oluştu" 
+                });
+            }
+        }
 
-	[HttpPost("{id}/approve")]
-	[Authorize(Roles = "Admin")]
-	public async Task<IActionResult> Approve(long id)
-	{
-		try
-		{
-			// TODO: Auth context'ten admin user ID alınmalı
-			var adminUserId = GetCurrentUserId();
-			var ok = await _service.ApproveAsync(id, adminUserId);
-			if (!ok) 
-                return BadRequest(new { Message = "Başvuru onaylanamadı. Durumunu kontrol ediniz." });
+        /// <summary>
+        /// Mağaza başvurusunu günceller (Admin için)
+        /// </summary>
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateApplication(long id, [FromBody] StoreApplicationUpdateRequest request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { 
+                        success = false, 
+                        message = "Geçersiz veri", 
+                        errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) 
+                    });
+                }
 
-			return Ok(new { Message = "Başvuru onaylandı"});
-		}
-		catch (Exception ex)
-		{
-			return StatusCode(500, new { Message = "Başvuru onaylanırken bir hata oluştu", Error = ex.Message });
-		}
-	}
+                request.Id = id;
+                var result = await _storeApplicationService.UpdateApplicationAsync(id, request);
+                
+                if (result.IsSuccess)
+                {
+                    _logger.LogInformation("Mağaza başvurusu güncellendi: {Id}", id);
+                    
+                    return Ok(new { 
+                        success = true, 
+                        message = "Mağaza başvurusu başarıyla güncellendi",
+                        data = result
+                    });
+                }
+                else
+                {
+                    return BadRequest(new { 
+                        success = false, 
+                        message = result.ErrorMessage ?? "Mağaza başvurusu güncellenemedi" 
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Mağaza başvurusu güncellenirken hata oluştu: {Id}", id);
+                
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Sunucu hatası oluştu" 
+                });
+            }
+        }
 
-	[HttpPost("{id}/reject")]
-	[Authorize(Roles = "Admin")]
-	public async Task<IActionResult> Reject(long id, [FromBody] string reason)
-	{
-		if (string.IsNullOrWhiteSpace(reason))
-			return BadRequest(new { Message = "Red sebebi belirtilmelidir" });
+        /// <summary>
+        /// Mağaza başvurusunu onaylar (Admin için)
+        /// </summary>
+        [HttpPost("{id}/approve")]
+        public async Task<IActionResult> ApproveApplication(long id, [FromBody] StoreApplicationApprovalRequest request)
+        {
+            try
+            {
+                request.ApplicationId = id;
+                var result = await _storeApplicationService.ApproveApplicationAsync(id, request);
+                
+                if (result.IsSuccess)
+                {
+                    _logger.LogInformation("Mağaza başvurusu onaylandı: {Id}", id);
+                    
+                    return Ok(new { 
+                        success = true, 
+                        message = "Mağaza başvurusu başarıyla onaylandı",
+                        data = result
+                    });
+                }
+                else
+                {
+                    return BadRequest(new { 
+                        success = false, 
+                        message = result.ErrorMessage ?? "Mağaza başvurusu onaylanamadı" 
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Mağaza başvurusu onaylanırken hata oluştu: {Id}", id);
+                
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Sunucu hatası oluştu" 
+                });
+            }
+        }
 
-		try
-		{
-			var adminUserId = GetCurrentUserId();
-			var ok = await _service.RejectAsync(id, reason, adminUserId);
-			if (!ok) return BadRequest(new { Message = "Başvuru reddedilemedi. Durumunu kontrol ediniz." });
-			return NoContent();
-		}
-		catch (Exception ex)
-		{
-			return StatusCode(500, new { Message = "Başvuru reddedilirken bir hata oluştu", Error = ex.Message });
-		}
-	}
+        /// <summary>
+        /// Mağaza başvurusunu reddeder (Admin için)
+        /// </summary>
+        [HttpPost("{id}/reject")]
+        public async Task<IActionResult> RejectApplication(long id, [FromBody] StoreApplicationRejectionRequest request)
+        {
+            try
+            {
+                request.ApplicationId = id;
+                var result = await _storeApplicationService.RejectApplicationAsync(id, request);
+                
+                if (result.IsSuccess)
+                {
+                    _logger.LogInformation("Mağaza başvurusu reddedildi: {Id}", id);
+                    
+                    return Ok(new { 
+                        success = true, 
+                        message = "Mağaza başvurusu reddedildi",
+                        data = result
+                    });
+                }
+                else
+                {
+                    return BadRequest(new { 
+                        success = false, 
+                        message = result.ErrorMessage ?? "Mağaza başvurusu reddedilemedi" 
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Mağaza başvurusu reddedilirken hata oluştu: {Id}", id);
+                
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Sunucu hatası oluştu" 
+                });
+            }
+        }
 
-	[HttpGet("{id}")]
-	[Authorize(Roles = "Admin")]
-	public async Task<ActionResult<StoreApplicationDetailDto>> GetById(long id)
-	{
-		try
-		{
-			var entity = await _service.GetAsync(id);
-			if (entity is null) return NotFound(new { Message = "Başvuru bulunamadı" });
-			
-			return Ok(new StoreApplicationDetailDto
-			{
-				Id = entity.Id,
-				StoreName = entity.StoreName,
-				Slug = entity.Slug,
-				Description = entity.Description,
-				ContactEmail = entity.ContactEmail,
-				ContactPhone = entity.ContactPhone,
-				BusinessAddress = entity.BusinessAddress,
-				TaxNumber = entity.TaxNumber,
-				Status = entity.Status.ToString(),
-				CreatedAt = entity.CreatedAt,
-				ApprovedAt = entity.ApprovedAt,
-				RejectionReason = entity.RejectionReason
-			});
-		}
-		catch (Exception ex)
-		{
-			return StatusCode(500, new { Message = "Başvuru bilgileri alınırken bir hata oluştu", Error = ex.Message });
-		}
-	}
-
-	// Dashboard endpoints
-	[HttpGet("search")]
-	[Authorize(Roles = "Admin")]
-	public async Task<ActionResult<StoreApplicationSearchResponse>> Search([FromQuery] StoreApplicationSearchRequest request)
-	{
-		try
-		{
-			// Validation
-			if (request.Page < 1) request.Page = 1;
-			if (request.PageSize < 1 || request.PageSize > 100) request.PageSize = 20;
-
-			var result = await _service.SearchAsync(request);
-			return Ok(result);
-		}
-		catch (Exception ex)
-		{
-			return StatusCode(500, new { Message = "Arama yapılırken bir hata oluştu", Error = ex.Message });
-		}
-	}
-
-	[HttpGet("stats")]
-	[Authorize(Roles = "Admin")]
-	public async Task<ActionResult<StoreApplicationStatsDto>> GetStats()
-	{
-		try
-		{
-			var stats = await _service.GetStatsAsync();
-			return Ok(stats);
-		}
-		catch (Exception ex)
-		{
-			return StatusCode(500, new { Message = "İstatistikler alınırken bir hata oluştu", Error = ex.Message });
-		}
-	}
-
-	[HttpGet("by-status/{status}")]
-	[Authorize(Roles = "Admin")]
-	public async Task<ActionResult<IEnumerable<StoreApplicationListDto>>> GetByStatus(string status)
-	{
-		try
-		{
-			var list = await _service.GetByStatusAsync(status);
-			var dtos = list.Select(x => new StoreApplicationListDto
-			{
-				Id = x.Id,
-				StoreName = x.StoreName,
-				Slug = x.Slug,
-				ContactEmail = x.ContactEmail,
-				Status = x.Status.ToString(),
-				CreatedAt = x.CreatedAt
-			});
-			return Ok(dtos);
-		}
-		catch (Exception ex)
-		{
-			return StatusCode(500, new { Message = "Durum bazlı listeleme yapılırken bir hata oluştu", Error = ex.Message });
-		}
-	}
-
-	[HttpGet("by-date-range")]
-	[Authorize(Roles = "Admin")]
-	public async Task<ActionResult<IEnumerable<StoreApplicationListDto>>> GetByDateRange(
-		[FromQuery] DateTime from, 
-		[FromQuery] DateTime to)
-	{
-		try
-		{
-			if (from > to)
-				return BadRequest(new { Message = "Başlangıç tarihi bitiş tarihinden büyük olamaz" });
-
-			var list = await _service.GetByDateRangeAsync(from, to);
-			var dtos = list.Select(x => new StoreApplicationListDto
-			{
-				Id = x.Id,
-				StoreName = x.StoreName,
-				Slug = x.Slug,
-				ContactEmail = x.ContactEmail,
-				Status = x.Status.ToString(),
-				CreatedAt = x.CreatedAt
-			});
-			return Ok(dtos);
-		}
-		catch (Exception ex)
-		{
-			return StatusCode(500, new { Message = "Tarih aralığı listeleme yapılırken bir hata oluştu", Error = ex.Message });
-		}
-	}
-
-	// TODO: Gerçek authentication context'ten user ID alınacak
-	private long GetCurrentUserId()
-	{
-		// Şimdilik hardcoded, gerçek implementasyonda JWT'den alınacak
-		return 1;
-	}
+        /// <summary>
+        /// Mağaza başvurusunu siler (Admin için)
+        /// </summary>
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteApplication(long id)
+        {
+            try
+            {
+                var result = await _storeApplicationService.DeleteApplicationAsync(id);
+                
+                if (result.IsSuccess)
+                {
+                    _logger.LogInformation("Mağaza başvurusu silindi: {Id}", id);
+                    
+                    return Ok(new { 
+                        success = true, 
+                        message = "Mağaza başvurusu başarıyla silindi" 
+                    });
+                }
+                else
+                {
+                    return BadRequest(new { 
+                        success = false, 
+                        message = result.ErrorMessage ?? "Mağaza başvurusu silinemedi" 
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Mağaza başvurusu silinirken hata oluştu: {Id}", id);
+                
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Sunucu hatası oluştu" 
+                });
+            }
+        }
+    }
 }

@@ -49,9 +49,9 @@ public class LoginModel : PageModel
             {
                 // Başarılı giriş - token'ı session'a kaydet
                 HttpContext.Session.SetString("AuthToken", response.Token);
-                HttpContext.Session.SetString("UserRole", response.Role);
-                HttpContext.Session.SetString("UserName", response.UserName);
-                HttpContext.Session.SetString("UserId", response.UserId.ToString());
+                HttpContext.Session.SetString("UserRole", response.User.Role);
+                HttpContext.Session.SetString("UserName", response.User.FullName);
+                HttpContext.Session.SetString("UserId", response.User.Id.ToString());
                 
                 // Dashboard ana sayfasına yönlendir
                 return RedirectToPage("/Index");
@@ -106,10 +106,17 @@ public sealed class LoginResponse
     public bool Success { get; set; }
     public string Token { get; set; } = string.Empty;
     public string RefreshToken { get; set; } = string.Empty;
-    public string Role { get; set; } = string.Empty;
-    public string UserName { get; set; } = string.Empty;
-    public long UserId { get; set; }
+    public UserInfo User { get; set; } = new();
     public string Message { get; set; } = string.Empty;
+}
+
+public sealed class UserInfo
+{
+    public long Id { get; set; }
+    public string Email { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
 }
 
 public sealed class DevLoginResponse 

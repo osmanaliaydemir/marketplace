@@ -3,6 +3,7 @@ using System.Data;
 using Infrastructure.Persistence.Context;
 using Infrastructure.Persistence.Naming;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Domain.Entities;
 using Application.Abstractions;
 
@@ -11,50 +12,32 @@ namespace Infrastructure.Persistence.Repositories;
 public class UnitOfWork : IUnitOfWork
 {
     private readonly IDbContext _dbContext;
-    private readonly ILogger _logger;
-    private readonly ITableNameResolver _tableNameResolver;
-    private readonly IColumnNameResolver _columnNameResolver;
-    private readonly ConcurrentDictionary<Type, object> _repositories = new();
+    private readonly ILogger<UnitOfWork> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
-    public UnitOfWork(IDbContext dbContext, ILogger<UnitOfWork> logger, ITableNameResolver tableNameResolver, IColumnNameResolver columnNameResolver)
+    public UnitOfWork(IDbContext dbContext, ILogger<UnitOfWork> logger, IServiceProvider serviceProvider)
     {
         _dbContext = dbContext;
         _logger = logger;
-        _tableNameResolver = tableNameResolver;
-        _columnNameResolver = columnNameResolver;
+        _serviceProvider = serviceProvider;
     }
 
     public IRepository<TEntity> Repository<TEntity>() where TEntity : class, Domain.Models.IEntity
     {
-        var entityType = typeof(TEntity);
-        if (!_repositories.TryGetValue(entityType, out var repository))
-        {
-            repository = Activator.CreateInstance(typeof(Repository<TEntity>), _dbContext, _logger, _tableNameResolver, _columnNameResolver)!;
-            _repositories[entityType] = repository;
-        }
-        return (IRepository<TEntity>)repository;
+        var repositoryType = typeof(IRepository<TEntity>);
+        return (IRepository<TEntity>)_serviceProvider.GetRequiredService(repositoryType);
     }
 
     public IAuditableRepository<TEntity> AuditableRepository<TEntity>() where TEntity : class, Domain.Models.IAuditableEntity
     {
-        var entityType = typeof(TEntity);
-        if (!_repositories.TryGetValue(entityType, out var repository))
-        {
-            repository = Activator.CreateInstance(typeof(AuditableRepository<TEntity>), _dbContext, _logger, _tableNameResolver, _columnNameResolver)!;
-            _repositories[entityType] = repository;
-        }
-        return (IAuditableRepository<TEntity>)repository;
+        var repositoryType = typeof(IAuditableRepository<TEntity>);
+        return (IAuditableRepository<TEntity>)_serviceProvider.GetRequiredService(repositoryType);
     }
 
     public ISoftDeleteRepository<TEntity> SoftDeleteRepository<TEntity>() where TEntity : class, Domain.Models.IAuditableEntity, Domain.Models.ISoftDeleteEntity
     {
-        var entityType = typeof(TEntity);
-        if (!_repositories.TryGetValue(entityType, out var repository))
-        {
-            repository = Activator.CreateInstance(typeof(SoftDeleteRepository<TEntity>), _dbContext, _logger, _tableNameResolver, _columnNameResolver)!;
-            _repositories[entityType] = repository;
-        }
-        return (ISoftDeleteRepository<TEntity>)repository;
+        var repositoryType = typeof(ISoftDeleteRepository<TEntity>);
+        return (ISoftDeleteRepository<TEntity>)_serviceProvider.GetRequiredService(repositoryType);
     }
 
     public Task<int> SaveChangesAsync()
@@ -132,33 +115,36 @@ public class UnitOfWork : IUnitOfWork
     public virtual void Dispose()
     {
         _dbContext?.Dispose();
-        foreach (var repo in _repositories.Values)
-        {
-            if (repo is IDisposable disposable)
-                disposable.Dispose();
-        }
-        _repositories.Clear();
+        // The following lines are removed as repositories are now managed by DI
+        // foreach (var repo in _repositories.Values)
+        // {
+        //     if (repo is IDisposable disposable)
+        //         disposable.Dispose();
+        // }
+        // _repositories.Clear();
     }
 }
 
 public sealed class StoreUnitOfWork : UnitOfWork, IStoreUnitOfWork
 {
     private readonly IInventoryRepository _inventoryRepository;
+    private readonly IAppUserRepository _userRepository;
 
     public StoreUnitOfWork(
         IDbContext dbContext, 
         ILogger<StoreUnitOfWork> logger, 
-        ITableNameResolver tableNameResolver, 
-        IColumnNameResolver columnNameResolver,
-        IInventoryRepository inventoryRepository)
-        : base(dbContext, logger, tableNameResolver, columnNameResolver)
+        IServiceProvider serviceProvider,
+        IInventoryRepository inventoryRepository,
+        IAppUserRepository userRepository)
+        : base(dbContext, logger, serviceProvider)
     {
         _inventoryRepository = inventoryRepository;
+        _userRepository = userRepository;
     }
 
     public IRepository<Store> Stores => AuditableRepository<Store>();
     public IRepository<Seller> Sellers => AuditableRepository<Seller>();
-    public IRepository<AppUser> Users => AuditableRepository<AppUser>();
+    public IAppUserRepository Users => _userRepository;
     public IRepository<StoreApplication> StoreApplications => AuditableRepository<StoreApplication>();
     public IRepository<Order> Orders => AuditableRepository<Order>();
     public IRepository<Product> Products => AuditableRepository<Product>();

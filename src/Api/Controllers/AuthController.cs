@@ -3,9 +3,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Infrastructure.Persistence.Repositories;
+using Application.Abstractions;
+using Application.DTOs.Users;
 using Domain.Entities;
-using System.Security.Cryptography;
 
 namespace Api.Controllers;
 
@@ -14,16 +14,16 @@ namespace Api.Controllers;
 public sealed class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;
-    private readonly IStoreUnitOfWork _unitOfWork;
+    private readonly IAppUserService _userService;
 
-    public AuthController(IConfiguration configuration, IStoreUnitOfWork unitOfWork)
+    public AuthController(IConfiguration configuration, IAppUserService userService)
     {
         _configuration = configuration;
-        _unitOfWork = unitOfWork;
+        _userService = userService;
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
     {
         try
         {
@@ -33,20 +33,20 @@ public sealed class AuthController : ControllerBase
             }
 
             // Kullanıcıyı bul (email veya username ile)
-            var user = await FindUserByEmailOrUsername(request.EmailOrUsername);
+            var user = await _userService.GetByEmailOrUsernameAsync(request.EmailOrUsername);
             if (user == null)
             {
                 return Unauthorized(new { Message = "Geçersiz email/kullanıcı adı veya şifre" });
             }
 
             // Şifreyi doğrula
-            if (!VerifyPassword(request.Password, user.PasswordHash))
+            if (!await _userService.VerifyPasswordAsync(request.EmailOrUsername, request.Password))
             {
                 return Unauthorized(new { Message = "Geçersiz email/kullanıcı adı veya şifre" });
             }
 
             // Kullanıcı aktif mi kontrol et
-            if (!user.IsActive)
+            if (!await _userService.IsUserActiveAsync(request.EmailOrUsername))
             {
                 return Unauthorized(new { Message = "Hesabınız aktif değil. Lütfen yönetici ile iletişime geçin." });
             }
@@ -57,14 +57,12 @@ public sealed class AuthController : ControllerBase
             // Refresh token oluştur (basit UUID, production'da Redis'te saklanmalı)
             var refreshToken = Guid.NewGuid().ToString();
 
-            return Ok(new LoginResponse
+            return Ok(new UserLoginResponse
             {
                 Success = true,
                 Token = token,
                 RefreshToken = refreshToken,
-                Role = user.Role.ToString(),
-                UserName = user.FullName,
-                UserId = user.Id,
+                User = user,
                 Message = "Giriş başarılı"
             });
         }
@@ -112,7 +110,7 @@ public sealed class AuthController : ControllerBase
                 var userId = long.Parse(jwtToken.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
 
                 // Kullanıcıyı bul
-                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                var user = await _userService.GetByIdAsync(userId);
                 if (user == null || !user.IsActive)
                 {
                     return Unauthorized(new { Message = "Kullanıcı bulunamadı veya aktif değil" });
@@ -122,15 +120,13 @@ public sealed class AuthController : ControllerBase
                 var newToken = GenerateJwtToken(user);
                 var newRefreshToken = Guid.NewGuid().ToString();
 
-                return Ok(new LoginResponse
+                return Ok(new UserLoginResponse
                 {
                     Success = true,
                     Token = newToken,
                     RefreshToken = newRefreshToken,
-                                    Role = user.Role.ToString(),
-                UserName = user.FullName,
-                UserId = user.Id,
-                Message = "Token yenilendi"
+                    User = user,
+                    Message = "Token yenilendi"
                 });
             }
             catch
@@ -175,36 +171,14 @@ public sealed class AuthController : ControllerBase
         return Ok(new { access_token = new JwtSecurityTokenHandler().WriteToken(token) });
     }
 
-    private async Task<AppUser?> FindUserByEmailOrUsername(string emailOrUsername)
-    {
-        var users = await _unitOfWork.Users.GetAllAsync();
-        return users.FirstOrDefault(u => 
-            u.Email.Equals(emailOrUsername, StringComparison.OrdinalIgnoreCase) ||
-            u.FullName.Equals(emailOrUsername, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private bool VerifyPassword(string password, string passwordHash)
-    {
-        // Basit hash kontrolü (production'da BCrypt/Argon2 kullanılmalı)
-        var hashedPassword = HashPassword(password);
-        return passwordHash.Equals(hashedPassword, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private string HashPassword(string password)
-    {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(hashedBytes);
-    }
-
-    private string GenerateJwtToken(AppUser user)
+    private string GenerateJwtToken(UserDto user)
     {
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Name, user.FullName),
-            new Claim(ClaimTypes.Role, user.Role.ToString())
+            new Claim(ClaimTypes.Role, user.Role)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!));
@@ -223,6 +197,7 @@ public sealed class AuthController : ControllerBase
     }
 }
 
+// Eski DTO'lar - geriye uyumluluk için
 public sealed class LoginRequest
 {
     public string EmailOrUsername { get; set; } = string.Empty;

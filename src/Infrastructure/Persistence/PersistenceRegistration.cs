@@ -4,9 +4,9 @@ using Dapper;
 using Infrastructure.Persistence.Context;
 using Infrastructure.Persistence.Naming;
 using Infrastructure.Persistence.Repositories;
-using Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Domain.Entities;
 
 namespace Infrastructure.Persistence;
 
@@ -29,7 +29,7 @@ public static class PersistenceRegistration
 		services.AddScoped<IUnitOfWork, UnitOfWork>();
 		services.AddScoped<IStoreUnitOfWork, StoreUnitOfWork>();
 		
-		// Repositories
+		// Repositories - Factory pattern ile kayıt
 		services.AddScoped<IProductRepository, ProductRepository>();
 		services.AddScoped<ICategoryRepository, CategoryRepository>();
 		services.AddScoped<IOrderRepository, OrderRepository>();
@@ -41,10 +41,12 @@ public static class PersistenceRegistration
 		services.AddScoped<ICartRepository, CartRepository>();
 		services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 		services.AddScoped<IExceptionLogRepository, ExceptionLogRepository>();
-		services.AddScoped<IOrderService, OrderService>();
+		services.AddScoped<IStoreApplicationRepository, StoreApplicationRepository>();
+		services.AddScoped<IAppUserRepository, AppUserRepository>();
 		
 		// Services
-		services.AddScoped<StoreApplicationService>();
+		services.AddScoped<IOrderService, OrderService>();
+		services.AddScoped<IAppUserService, AppUserService>();
 		
 		return services;
 	}

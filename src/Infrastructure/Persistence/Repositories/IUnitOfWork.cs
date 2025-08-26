@@ -20,7 +20,7 @@ public interface IStoreUnitOfWork : IUnitOfWork
 {
     IRepository<Store> Stores { get; }
     IRepository<Seller> Sellers { get; }
-    IRepository<AppUser> Users { get; }
+    IAppUserRepository Users { get; }
     IRepository<StoreApplication> StoreApplications { get; }
     IRepository<Order> Orders { get; }
     IRepository<Product> Products { get; }

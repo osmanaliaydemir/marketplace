@@ -24,6 +24,7 @@ public class AuthenticationMiddleware
         }
 
         // Session'dan token kontrolü
+        
         var token = context.Session.GetString("AuthToken");
         var userRole = context.Session.GetString("UserRole");
 

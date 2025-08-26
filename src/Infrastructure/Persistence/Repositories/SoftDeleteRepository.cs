@@ -7,10 +7,9 @@ using Application.Abstractions;
 
 namespace Infrastructure.Persistence.Repositories;
 
-public class SoftDeleteRepository<TEntity> : AuditableRepository<TEntity>, ISoftDeleteRepository<TEntity> 
-	where TEntity : class, ISoftDeleteEntity, IAuditableEntity
+public abstract class SoftDeleteRepository<TEntity> : Repository<TEntity> where TEntity : class, IEntity, ISoftDeleteEntity
 {
-	public SoftDeleteRepository(IDbContext dbContext, ILogger logger, ITableNameResolver tableNameResolver, IColumnNameResolver columnNameResolver) 
+	public SoftDeleteRepository(IDbContext dbContext, ILogger<SoftDeleteRepository<TEntity>> logger, ITableNameResolver tableNameResolver, IColumnNameResolver columnNameResolver) 
 		: base(dbContext, logger, tableNameResolver, columnNameResolver)
 	{
 	}

@@ -12,12 +12,12 @@ namespace Infrastructure.Persistence.Repositories;
 public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, IEntity
 {
 	protected readonly IDbContext _dbContext;
-	protected readonly ILogger _logger;
+	protected readonly ILogger<Repository<TEntity>> _logger;
 	protected readonly string _tableName;
 	protected readonly string _idColumn;
 	private readonly IColumnNameResolver _columnNameResolver;
 
-	public Repository(IDbContext dbContext, ILogger logger, ITableNameResolver? tableNameResolver, IColumnNameResolver? columnNameResolver)
+	public Repository(IDbContext dbContext, ILogger<Repository<TEntity>> logger, ITableNameResolver? tableNameResolver, IColumnNameResolver? columnNameResolver)
 	{
 		_dbContext = dbContext;
 		_logger = logger;

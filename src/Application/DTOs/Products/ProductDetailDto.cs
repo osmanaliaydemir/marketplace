@@ -34,11 +34,21 @@ public sealed record ProductDetailDto
     public DateTime? PublishedAt { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? ModifiedAt { get; init; }
+    public DateTime? UpdatedAt { get; init; }
+    
+    // Additional Properties
+    public string? Brand { get; init; }
+    public string? Model { get; init; }
+    public string? Sku { get; init; }
+    public string? Barcode { get; init; }
+    public decimal? Rating { get; init; }
+    public int? ReviewCount { get; init; }
+    public IEnumerable<ProductReviewDto> Reviews { get; init; } = Enumerable.Empty<ProductReviewDto>();
     
     // Related Data
     public CategoryDto? Category { get; init; }
-    public StoreDto? Store { get; init; }
-    public SellerDto? Seller { get; init; }
+    public Application.DTOs.Stores.StoreDto? Store { get; init; }
+    public Application.DTOs.Sellers.SellerDto? Seller { get; init; }
     public IEnumerable<ProductVariantDto> Variants { get; init; } = Enumerable.Empty<ProductVariantDto>();
     public IEnumerable<ProductImageDto> Images { get; init; } = Enumerable.Empty<ProductImageDto>();
     
@@ -47,4 +57,14 @@ public sealed record ProductDetailDto
     public bool HasDiscount => CompareAtPrice.HasValue && CompareAtPrice > Price;
     public bool IsInStock => StockQty > 0;
     public bool IsLowStock => StockQty > 0 && StockQty <= 10;
+}
+
+// Product Review DTO
+public record ProductReviewDto
+{
+    public long Id { get; init; }
+    public string CustomerName { get; init; } = string.Empty;
+    public int Rating { get; init; }
+    public string Comment { get; init; } = string.Empty;
+    public DateTime CreatedAt { get; init; }
 } 
