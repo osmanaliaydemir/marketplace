@@ -1,0 +1,222 @@
+@page "/magaza-basvurusu/basarili"
+@model SuccessModel
+@{
+    ViewData["Title"] = "Başvuru Başarılı";
+    ViewData["Description"] = "Mağaza başvurunuz başarıyla alındı. En kısa sürede size dönüş yapacağız.";
+    ViewData["Keywords"] = "mağaza başvuru başarılı, onay, marketplace";
+}
+
+<!-- Success Header -->
+<section class="success-header bg-gradient-success text-white py-5">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <div class="success-icon mb-4">
+                    <i class="fas fa-check-circle display-1"></i>
+                </div>
+                <h1 class="display-4 fw-bold mb-3">Başvurunuz Başarıyla Alındı!</h1>
+                <p class="lead mb-0">Marketplace platformumuzda mağaza açma başvurunuz başarıyla kaydedildi.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Success Content -->
+<section class="success-content py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Success Card -->
+                <div class="card border-0 shadow-lg mb-5">
+                    <div class="card-body p-5 text-center">
+                        <div class="success-animation mb-4">
+                            <div class="checkmark">
+                                <div class="checkmark-stem"></div>
+                                <div class="checkmark-kick"></div>
+                            </div>
+                        </div>
+                        
+                        <h2 class="text-success mb-3">Başvurunuz İşleme Alındı</h2>
+                        <p class="text-muted mb-4">
+                            Mağaza başvurunuz ekibimiz tarafından incelenmektedir. 
+                            Genellikle 24 saat içinde size e-posta veya telefon ile dönüş yapılmaktadır.
+                        </p>
+                        
+                        <div class="success-details bg-light rounded p-4 mb-4">
+                            <h5 class="mb-3">Sonraki Adımlar:</h5>
+                            <div class="row text-start">
+                                <div class="col-md-6">
+                                    <div class="step-item d-flex align-items-center mb-3">
+                                        <div class="step-number me-3">1</div>
+                                        <div>
+                                            <strong>Başvuru İnceleme</strong>
+                                            <small class="d-block text-muted">Ekibimiz başvurunuzu detaylı inceler</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="step-item d-flex align-items-center mb-3">
+                                        <div class="step-number me-3">2</div>
+                                        <div>
+                                            <strong>Onay Süreci</strong>
+                                            <small class="d-block text-muted">Gerekli belgeler kontrol edilir</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="step-item d-flex align-items-center mb-3">
+                                        <div class="step-number me-3">3</div>
+                                        <div>
+                                            <strong>Mağaza Açılışı</strong>
+                                            <small class="d-block text-muted">Mağazanız aktif hale getirilir</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="step-item d-flex align-items-center mb-3">
+                                        <div class="step-number me-3">4</div>
+                                        <div>
+                                            <strong>Satışa Başlama</strong>
+                                            <small class="d-block text-muted">Ürünlerinizi yüklemeye başlayın</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Önemli:</strong> Başvuru durumunuzu takip etmek için e-posta kutunuzı kontrol etmeyi unutmayın.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="text-center mb-5">
+                    <a href="/" class="btn btn-primary btn-lg me-3 mb-2">
+                        <i class="fas fa-home me-2"></i>Ana Sayfaya Dön
+                    </a>
+                    <a href="/seller-benefits" class="btn btn-outline-primary btn-lg mb-2">
+                        <i class="fas fa-chart-line me-2"></i>Satıcı Avantajları
+                    </a>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-headset me-2"></i>Destek & İletişim</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-4 text-center">
+                                <div class="contact-item">
+                                    <i class="fas fa-envelope text-primary fs-2 mb-3"></i>
+                                    <h6>E-posta</h6>
+                                    <p class="text-muted mb-0">destek@marketplace.com</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="contact-item">
+                                    <i class="fas fa-phone text-primary fs-2 mb-3"></i>
+                                    <h6>Telefon</h6>
+                                    <p class="text-muted mb-0">0850 123 45 67</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="contact-item">
+                                    <i class="fas fa-clock text-primary fs-2 mb-3"></i>
+                                    <h6>Çalışma Saatleri</h6>
+                                    <p class="text-muted mb-0">Pzt-Cmt: 09:00-18:00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq-section py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h3 class="text-center mb-5">Sık Sorulan Sorular</h3>
+                
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h2 class="accordion-header" id="faq1">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+                                Başvuru süreci ne kadar sürer?
+                            </button>
+                        </h2>
+                        <div id="collapse1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Mağaza başvuruları genellikle 24-48 saat içinde değerlendirilir. 
+                                Gerekli belgeler eksikse ek süre gerekebilir.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h2 class="accordion-header" id="faq2">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
+                                Hangi belgeler gerekli?
+                            </button>
+                        </h2>
+                        <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Temel olarak işletme bilgileri, vergi numarası ve iletişim bilgileri yeterlidir. 
+                                Kurumsal başvurularda ek belgeler istenebilir.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h2 class="accordion-header" id="faq3">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
+                                Komisyon oranları nedir?
+                            </button>
+                        </h2>
+                        <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Platform komisyon oranımız sadece %5'tir. Bu oran, 
+                                satış başına alınan tek komisyondur.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h2 class="accordion-header" id="faq4">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4">
+                                Mağaza açıldıktan sonra ne yapmalıyım?
+                            </button>
+                        </h2>
+                        <div id="collapse4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Mağazanız onaylandıktan sonra ürün fotoğrafları çekip yükleyebilir, 
+                                fiyat belirleyebilir ve satışa başlayabilirsiniz.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Success animation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Trigger success animation
+            setTimeout(() => {
+                document.querySelector('.success-animation').classList.add('animate');
+            }, 500);
+            
+            // Auto-scroll to top
+            window.scrollTo(0, 0);
+        });
+    </script>
+}

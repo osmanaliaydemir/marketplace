@@ -1,38 +1,310 @@
-@page
-@model Web.Pages.StoreApplications.ApplyModel
+@page "/magaza-basvurusu"
+@model ApplyModel
+@{
+    ViewData["Title"] = "Mağaza Başvurusu";
+    ViewData["Description"] = "Marketplace platformumuzda mağaza açmak için başvuru yapın. Hızlı onay ve kolay süreç.";
+    ViewData["Keywords"] = "mağaza aç, satıcı ol, marketplace başvuru, online satış";
+}
 
-<h2>Mağaza Başvurusu</h2>
+<!-- Page Header -->
+<section class="page-header bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb bg-transparent p-0 mb-3">
+                        <li class="breadcrumb-item"><a href="/" class="text-white">Ana Sayfa</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Mağaza Başvurusu</li>
+                    </ol>
+                </nav>
+                <h1 class="display-5 fw-bold mb-3">Mağaza Başvurusu</h1>
+                <p class="lead mb-0">Marketplace platformumuzda kendi mağazanızı açın ve satışa başlayın!</p>
+            </div>
+            <div class="col-lg-4 text-center">
+                <i class="fas fa-store display-1 opacity-75"></i>
+            </div>
+        </div>
+    </div>
+</section>
 
-<form method="post">
-    <div>
-        <label>Mağaza Adı</label>
-        <input asp-for="Form.StoreName" />
+<!-- Application Form -->
+<section class="application-form py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Progress Steps -->
+                <div class="progress-steps mb-5">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="step-item active" id="step-1">
+                                <div class="step-number">1</div>
+                                <div class="step-label">İşletme Bilgileri</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="step-item" id="step-2">
+                                <div class="step-number">2</div>
+                                <div class="step-label">Kategori & Ürünler</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="step-item" id="step-3">
+                                <div class="step-number">3</div>
+                                <div class="step-label">İletişim & Onay</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Application Form -->
+                <form id="storeApplicationForm" class="needs-validation" method="post" novalidate>
+                    <!-- Step 1: Business Information -->
+                    <div class="form-step active" id="form-step-1">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-primary text-white">
+                                <h4 class="mb-0"><i class="fas fa-building me-2"></i>İşletme Bilgileri</h4>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="businessName" class="form-label">İşletme Adı *</label>
+                                        <input type="text" class="form-control" id="businessName" asp-for="Application.BusinessName" required>
+                                        <div class="invalid-feedback">İşletme adı gereklidir.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="businessType" class="form-label">İşletme Türü *</label>
+                                        <select class="form-select" id="businessType" asp-for="Application.BusinessType" required>
+                                            <option value="">Seçiniz</option>
+                                            <option value="individual">Bireysel</option>
+                                            <option value="corporate">Kurumsal</option>
+                                            <option value="partnership">Ortaklık</option>
+                                        </select>
+                                        <div class="invalid-feedback">İşletme türü seçiniz.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="taxNumber" class="form-label">Vergi Numarası</label>
+                                        <input type="text" class="form-control" id="taxNumber" asp-for="Application.TaxNumber" placeholder="Opsiyonel">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="businessLicense" class="form-label">İşletme Belgesi</label>
+                                        <input type="text" class="form-control" id="businessLicense" asp-for="Application.BusinessLicense" placeholder="Opsiyonel">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="businessDescription" class="form-label">İşletme Açıklaması *</label>
+                                        <textarea class="form-control" id="businessDescription" asp-for="Application.BusinessDescription" rows="3" required placeholder="İşletmenizi kısaca tanıtın..."></textarea>
+                                        <div class="invalid-feedback">İşletme açıklaması gereklidir.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="website" class="form-label">Web Sitesi</label>
+                                        <input type="url" class="form-control" id="website" asp-for="Application.Website" placeholder="https://www.example.com">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="socialMedia" class="form-label">Sosyal Medya</label>
+                                        <input type="text" class="form-control" id="socialMedia" name="socialMedia" placeholder="Instagram, Facebook vb.">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Category & Products -->
+                    <div class="form-step" id="form-step-2">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-success text-white">
+                                <h4 class="mb-0"><i class="fas fa-th-large me-2"></i>Kategori & Ürünler</h4>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="primaryCategory" class="form-label">Ana Kategori *</label>
+                                        <select class="form-select" id="primaryCategory" asp-for="Application.PrimaryCategory" required>
+                                            <option value="">Seçiniz</option>
+                                            <option value="fashion">Giyim & Moda</option>
+                                            <option value="electronics">Elektronik</option>
+                                            <option value="home">Ev & Yaşam</option>
+                                            <option value="beauty">Kozmetik</option>
+                                            <option value="baby">Bebek & Çocuk</option>
+                                            <option value="sports">Spor & Outdoor</option>
+                                            <option value="books">Kitap & Hobi</option>
+                                            <option value="automotive">Otomotiv</option>
+                                            <option value="other">Diğer</option>
+                                        </select>
+                                        <div class="invalid-feedback">Ana kategori seçiniz.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="secondaryCategory" class="form-label">İkincil Kategori</label>
+                                        <select class="form-select" id="secondaryCategory" asp-for="Application.SecondaryCategory">
+                                            <option value="">Seçiniz</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="productCount" class="form-label">Ürün Sayısı *</label>
+                                        <select class="form-select" id="productCount" asp-for="Application.ProductCount" required>
+                                            <option value="">Seçiniz</option>
+                                            <option value="10">1-10 ürün</option>
+                                            <option value="50">11-50 ürün</option>
+                                            <option value="100">51-100 ürün</option>
+                                            <option value="500">101-500 ürün</option>
+                                            <option value="1000">500+ ürün</option>
+                                        </select>
+                                        <div class="invalid-feedback">Ürün sayısı seçiniz.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="expectedRevenue" class="form-label">Beklenen Aylık Gelir *</label>
+                                        <select class="form-select" id="expectedRevenue" asp-for="Application.ExpectedRevenue" required>
+                                            <option value="">Seçiniz</option>
+                                            <option value="5000">0-5.000₺</option>
+                                            <option value="15000">5.000-15.000₺</option>
+                                            <option value="30000">15.000-30.000₺</option>
+                                            <option value="50000">30.000-50.000₺</option>
+                                            <option value="100000">50.000₺+</option>
+                                        </select>
+                                        <div class="invalid-feedback">Beklenen gelir seçiniz.</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="experience" class="form-label">E-ticaret Deneyimi *</label>
+                                        <select class="form-select" id="experience" asp-for="Application.Experience" required>
+                                            <option value="">Seçiniz</option>
+                                            <option value="none">Hiç deneyim yok</option>
+                                            <option value="beginner">Başlangıç seviyesi</option>
+                                            <option value="intermediate">Orta seviye</option>
+                                            <option value="advanced">İleri seviye</option>
+                                            <option value="expert">Uzman seviyesi</option>
+                                        </select>
+                                        <div class="invalid-feedback">Deneyim seviyesi seçiniz.</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="productDescription" class="form-label">Ürün Açıklaması</label>
+                                        <textarea class="form-control" id="productDescription" asp-for="Application.ProductDescription" rows="3" placeholder="Satacağınız ürünler hakkında bilgi verin..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Contact & Confirmation -->
+                    <div class="form-step" id="form-step-3">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-info text-white">
+                                <h4 class="mb-0"><i class="fas fa-address-card me-2"></i>İletişim & Onay</h4>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="contactName" class="form-label">İletişim Kişisi *</label>
+                                        <input type="text" class="form-control" id="contactName" asp-for="Application.ContactName" required>
+                                        <div class="invalid-feedback">İletişim kişisi gereklidir.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="contactEmail" class="form-label">E-posta *</label>
+                                        <input type="email" class="form-control" id="contactEmail" asp-for="Application.ContactEmail" required>
+                                        <div class="invalid-feedback">Geçerli e-posta adresi giriniz.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="phoneNumber" class="form-label">Telefon *</label>
+                                        <input type="tel" class="form-control" id="phoneNumber" asp-for="Application.PhoneNumber" required>
+                                        <div class="invalid-feedback">Telefon numarası gereklidir.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="city" class="form-label">Şehir *</label>
+                                        <select class="form-select" id="city" asp-for="Application.City" required>
+                                            <option value="">Seçiniz</option>
+                                            <option value="istanbul">İstanbul</option>
+                                            <option value="ankara">Ankara</option>
+                                            <option value="izmir">İzmir</option>
+                                            <option value="bursa">Bursa</option>
+                                            <option value="antalya">Antalya</option>
+                                            <option value="other">Diğer</option>
+                                        </select>
+                                        <div class="invalid-feedback">Şehir seçiniz.</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="address" class="form-label">Adres</label>
+                                        <textarea class="form-control" id="address" asp-for="Application.Address" rows="2" placeholder="İşletme adresi..."></textarea>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="termsAccepted" asp-for="Application.TermsAccepted" required>
+                                            <label class="form-check-label" for="termsAccepted">
+                                                <a href="/terms" target="_blank">Kullanım Şartları</a> ve <a href="/privacy" target="_blank">Gizlilik Politikası</a>'nı okudum ve kabul ediyorum. *
+                                            </label>
+                                            <div class="invalid-feedback">Şartları kabul etmelisiniz.</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="newsletter" asp-for="Application.Newsletter">
+                                            <label class="form-check-label" for="newsletter">
+                                                E-posta ile güncellemeler ve fırsatlar hakkında bilgi almak istiyorum.
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Navigation -->
+                    <div class="form-navigation mt-4">
+                        <div class="row">
+                            <div class="col-6">
+                                <button type="button" class="btn btn-secondary btn-lg w-100" id="prevBtn" style="display: none;">
+                                    <i class="fas fa-arrow-left me-2"></i>Önceki
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-primary btn-lg w-100" id="nextBtn">
+                                    Sonraki<i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                                <button type="submit" class="btn btn-success btn-lg w-100" id="submitBtn" style="display: none;">
+                                    <i class="fas fa-paper-plane me-2"></i>Başvuruyu Gönder
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div>
-        <label>Slug</label>
-        <input asp-for="Form.Slug" />
+</section>
+
+<!-- Benefits Section -->
+<section class="benefits-section py-5 bg-light">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="benefit-card text-center p-4 bg-white rounded shadow-sm h-100">
+                    <div class="benefit-icon mb-3">
+                        <i class="fas fa-rocket text-primary fs-1"></i>
+                    </div>
+                    <h5>Hızlı Onay</h5>
+                    <p class="text-muted">Başvurunuz 24 saat içinde değerlendirilir ve size bilgi verilir.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="benefit-card text-center p-4 bg-white rounded shadow-sm h-100">
+                    <div class="benefit-icon mb-3">
+                        <i class="fas fa-chart-line text-primary fs-1"></i>
+                    </div>
+                    <h5>Düşük Komisyon</h5>
+                    <p class="text-muted">Sadece %5 komisyon ile maksimum kar elde edin.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="benefit-card text-center p-4 bg-white rounded shadow-sm h-100">
+                    <div class="benefit-icon mb-3">
+                        <i class="fas fa-users text-primary fs-1"></i>
+                    </div>
+                    <h5>Geniş Müşteri Ağı</h5>
+                    <p class="text-muted">Milyonlarca potansiyel müşteriye ulaşın.</p>
+                </div>
+            </div>
+        </div>
     </div>
-    <div>
-        <label>İletişim Email</label>
-        <input asp-for="Form.ContactEmail" />
-    </div>
-    <div>
-        <label>Telefon</label>
-        <input asp-for="Form.ContactPhone" />
-    </div>
-    <div>
-        <label>Açıklama</label>
-        <textarea asp-for="Form.Description"></textarea>
-    </div>
-    <div>
-        <label>Adres</label>
-        <textarea asp-for="Form.BusinessAddress"></textarea>
-    </div>
-    <div>
-        <label>Vergi No</label>
-        <input asp-for="Form.TaxNumber" />
-    </div>
-    <button type="submit">Gönder</button>
-</form>
+</section>
+
+@section Scripts {
+    <script src="~/js/store-application.js"></script>
+}
 
 

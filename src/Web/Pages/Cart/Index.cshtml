@@ -1,0 +1,428 @@
+@page
+@model CartIndexModel
+@{
+    ViewData["Title"] = "Sepetim";
+    ViewData["Description"] = "Alışveriş sepetinizdeki ürünleri görüntüleyin ve düzenleyin";
+    ViewData["Keywords"] = "sepet, alışveriş, ürün, marketplace";
+}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="bg-light py-3">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Ana Sayfa</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Sepetim</li>
+        </ol>
+    </div>
+</nav>
+
+<!-- Cart Section -->
+<section class="cart-section py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Cart Items -->
+            <div class="col-lg-8">
+                <div class="cart-items">
+                    <h2 class="mb-4">
+                        <i class="fas fa-shopping-cart me-2"></i>Alışveriş Sepetim
+                        <span class="badge bg-primary ms-2">@(Model.CartItems?.Count ?? 0) ürün</span>
+                    </h2>
+                    
+                    @if (Model.CartItems?.Any() == true)
+                    {
+                        foreach (var item in Model.CartItems)
+                        {
+                            <div class="cart-item bg-white rounded shadow-sm p-4 mb-3" data-product-id="@item.ProductId">
+                                <div class="row align-items-center">
+                                    <!-- Product Image -->
+                                    <div class="col-md-2 col-4">
+                                        <img src="@item.ImageUrl" alt="@item.ProductName" class="img-fluid rounded">
+                                    </div>
+                                    
+                                    <!-- Product Info -->
+                                    <div class="col-md-4 col-8">
+                                        <h6 class="product-name mb-2">@item.ProductName</h6>
+                                        <p class="text-muted mb-1">SKU: @item.Sku</p>
+                                        @if (!string.IsNullOrEmpty(item.VariantName))
+                                        {
+                                            <p class="text-muted mb-1">Varyant: @item.VariantName</p>
+                                        }
+                                        <div class="stock-info">
+                                            @if (item.StockQty > 0)
+                                            {
+                                                <small class="text-success">✓ Stokta @item.StockQty adet</small>
+                                            }
+                                            else
+                                            {
+                                                <small class="text-danger">✗ Stokta yok</small>
+                                            }
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Quantity -->
+                                    <div class="col-md-2 col-6">
+                                        <label class="form-label">Adet:</label>
+                                        <div class="input-group">
+                                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="decreaseQuantity(@item.ProductId)">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <input type="number" class="form-control form-control-sm text-center" 
+                                                   value="@item.Quantity" min="1" max="@item.StockQty" 
+                                                   onchange="updateQuantity(@item.ProductId, this.value)">
+                                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="increaseQuantity(@item.ProductId)">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Price -->
+                                    <div class="col-md-2 col-6">
+                                        <div class="price-info text-end">
+                                            @if (item.CompareAtPrice > item.Price)
+                                            {
+                                                <div class="current-price fw-bold text-primary">₺@item.Price.ToString("N2")</div>
+                                                <div class="compare-price text-muted text-decoration-line-through small">₺@item.CompareAtPrice.ToString("N2")</div>
+                                            }
+                                            else
+                                            {
+                                                <div class="current-price fw-bold text-primary">₺@item.Price.ToString("N2")</div>
+                                            }
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Total & Actions -->
+                                    <div class="col-md-2 col-12">
+                                        <div class="total-price text-end mb-2">
+                                            <strong>₺@((item.Price * item.Quantity).ToString("N2"))</strong>
+                                        </div>
+                                        <div class="actions">
+                                            <button class="btn btn-outline-danger btn-sm w-100 mb-1" onclick="removeFromCart(@item.ProductId)">
+                                                <i class="fas fa-trash me-1"></i>Kaldır
+                                            </button>
+                                            <button class="btn btn-outline-primary btn-sm w-100" onclick="addToWishlist(@item.ProductId)">
+                                                <i class="fas fa-heart me-1"></i>Favori
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        
+                        <!-- Cart Actions -->
+                        <div class="cart-actions bg-white rounded shadow-sm p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <button class="btn btn-outline-secondary me-2" onclick="clearCart()">
+                                        <i class="fas fa-trash me-2"></i>Sepeti Temizle
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="continueShopping()">
+                                        <i class="fas fa-arrow-left me-2"></i>Alışverişe Devam Et
+                                    </button>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <button class="btn btn-success btn-lg" onclick="proceedToCheckout()">
+                                        <i class="fas fa-credit-card me-2"></i>Ödemeye Geç
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Empty Cart -->
+                        <div class="empty-cart text-center py-5">
+                            <div class="empty-cart-icon mb-4">
+                                <i class="fas fa-shopping-cart text-muted" style="font-size: 4rem;"></i>
+                            </div>
+                            <h4 class="text-muted mb-3">Sepetiniz Boş</h4>
+                            <p class="text-muted mb-4">Henüz sepetinize ürün eklemediniz. Alışverişe başlamak için aşağıdaki butona tıklayın.</p>
+                            <a href="/" class="btn btn-primary btn-lg">
+                                <i class="fas fa-shopping-bag me-2"></i>Alışverişe Başla
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- Cart Summary -->
+            <div class="col-lg-4">
+                <div class="cart-summary bg-white rounded shadow-sm p-4 sticky-top" style="top: 100px;">
+                    <h5 class="mb-4">
+                        <i class="fas fa-calculator me-2"></i>Sipariş Özeti
+                    </h5>
+                    
+                    @if (Model.CartItems?.Any() == true)
+                    {
+                        <!-- Summary Items -->
+                        <div class="summary-items mb-3">
+                            @foreach (var item in Model.CartItems)
+                            {
+                                <div class="summary-item d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <div>
+                                        <small class="text-muted">@item.ProductName</small>
+                                        <br>
+                                        <small class="text-muted">@item.Quantity adet x ₺@item.Price.ToString("N2")</small>
+                                    </div>
+                                    <small class="fw-bold">₺@((item.Price * item.Quantity).ToString("N2"))</small>
+                                </div>
+                            }
+                        </div>
+                        
+                        <!-- Subtotal -->
+                        <div class="summary-row d-flex justify-content-between align-items-center py-2">
+                            <span>Ara Toplam:</span>
+                            <span class="fw-bold">₺@Model.Subtotal.ToString("N2")</span>
+                        </div>
+                        
+                        <!-- Shipping -->
+                        <div class="summary-row d-flex justify-content-between align-items-center py-2">
+                            <span>Kargo:</span>
+                            @if (Model.Subtotal >= 150)
+                            {
+                                <span class="text-success">Ücretsiz</span>
+                            }
+                            else
+                            {
+                                <span>₺@Model.ShippingCost.ToString("N2")</span>
+                            }
+                        </div>
+                        
+                        <!-- Tax -->
+                        <div class="summary-row d-flex justify-content-between align-items-center py-2">
+                            <span>KDV (%18):</span>
+                            <span class="fw-bold">₺@Model.TaxAmount.ToString("N2")</span>
+                        </div>
+                        
+                        <!-- Total -->
+                        <div class="summary-row d-flex justify-content-between align-items-center py-3 border-top">
+                            <span class="fs-5 fw-bold">Toplam:</span>
+                            <span class="fs-5 fw-bold text-primary">₺@Model.Total.ToString("N2")</span>
+                        </div>
+                        
+                        <!-- Free Shipping Info -->
+                        @if (Model.Subtotal < 150)
+                        {
+                            <div class="free-shipping-info bg-light rounded p-3 text-center mb-3">
+                                <i class="fas fa-truck text-primary me-2"></i>
+                                <small class="text-muted">
+                                    ₺@((150 - Model.Subtotal).ToString("N2")) daha alışveriş yapın, kargo ücretsiz olsun!
+                                </small>
+                            </div>
+                        }
+                        
+                        <!-- Checkout Button -->
+                        <button class="btn btn-success w-100 btn-lg" onclick="proceedToCheckout()">
+                            <i class="fas fa-credit-card me-2"></i>Ödemeye Geç
+                        </button>
+                        
+                        <!-- Payment Methods -->
+                        <div class="payment-methods text-center mt-3">
+                            <small class="text-muted">Güvenli Ödeme</small>
+                            <div class="mt-2">
+                                <i class="fab fa-cc-visa text-primary me-2 fs-4"></i>
+                                <i class="fab fa-cc-mastercard text-primary me-2 fs-4"></i>
+                                <i class="fab fa-cc-paypal text-primary me-2 fs-4"></i>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <p class="text-muted">Sepetinizde ürün bulunmuyor.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recently Viewed Products -->
+<section class="recently-viewed py-5 bg-light">
+    <div class="container">
+        <h3 class="mb-4">Son Görüntülenen Ürünler</h3>
+        <div class="row g-4">
+            @for (int i = 1; i <= 4; i++)
+            {
+                <div class="col-lg-3 col-md-6">
+                    <div class="product-card bg-white rounded shadow-sm h-100">
+                        <div class="product-image position-relative">
+                            <img src="https://via.placeholder.com/300x300/6c757d/ffffff?text=Recent+@i" alt="Recent Product @i" class="img-fluid rounded-top w-100">
+                            <div class="product-actions position-absolute top-0 end-0 p-2">
+                                <button class="btn btn-sm btn-light rounded-circle mb-1">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                                <button class="btn btn-sm btn-light rounded-circle">
+                                    <i class="fas fa-eye text-primary"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info p-3">
+                            <h6 class="product-title mb-2">Son Görüntülenen Ürün @i</h6>
+                            <div class="product-rating mb-2">
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="far fa-star text-warning"></i>
+                                <small class="text-muted ms-1">(32)</small>
+                            </div>
+                            <div class="product-price mb-3">
+                                <span class="fs-5 fw-bold text-primary">₺@(149.99 + i * 25).ToString("N2")</span>
+                            </div>
+                            <button class="btn btn-primary w-100">
+                                <i class="fas fa-shopping-cart me-2"></i>Sepete Ekle
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Cart functionality
+        function updateQuantity(productId, quantity) {
+            const newQuantity = parseInt(quantity);
+            if (newQuantity < 1) return;
+            
+            // Update cart item quantity
+            // TODO: Implement actual API call
+            console.log(`Updating product ${productId} quantity to ${newQuantity}`);
+            
+            // Refresh cart display
+            location.reload();
+        }
+        
+        function increaseQuantity(productId) {
+            const input = document.querySelector(`[data-product-id="${productId}"] input[type="number"]`);
+            const currentValue = parseInt(input.value);
+            const maxValue = parseInt(input.max);
+            
+            if (currentValue < maxValue) {
+                input.value = currentValue + 1;
+                updateQuantity(productId, input.value);
+            }
+        }
+        
+        function decreaseQuantity(productId) {
+            const input = document.querySelector(`[data-product-id="${productId}"] input[type="number"]`);
+            const currentValue = parseInt(input.value);
+            
+            if (currentValue > 1) {
+                input.value = currentValue - 1;
+                updateQuantity(productId, input.value);
+            }
+        }
+        
+        function removeFromCart(productId) {
+            if (confirm('Bu ürünü sepetten kaldırmak istediğinizden emin misiniz?')) {
+                // Remove from cart
+                // TODO: Implement actual API call
+                console.log(`Removing product ${productId} from cart`);
+                
+                // Remove from DOM
+                const cartItem = document.querySelector(`[data-product-id="${productId}"]`);
+                if (cartItem) {
+                    cartItem.remove();
+                    
+                    // Update cart count
+                    updateCartCount();
+                    
+                    // Show notification
+                    showNotification('Ürün sepetten kaldırıldı', 'success');
+                }
+            }
+        }
+        
+        function addToWishlist(productId) {
+            // Add to wishlist
+            // TODO: Implement actual API call
+            console.log(`Adding product ${productId} to wishlist`);
+            
+            showNotification('Ürün favorilere eklendi', 'success');
+        }
+        
+        function clearCart() {
+            if (confirm('Sepetinizdeki tüm ürünleri kaldırmak istediğinizden emin misiniz?')) {
+                // Clear cart
+                // TODO: Implement actual API call
+                console.log('Clearing cart');
+                
+                // Clear DOM
+                const cartItems = document.querySelectorAll('.cart-item');
+                cartItems.forEach(item => item.remove());
+                
+                // Update cart count
+                updateCartCount();
+                
+                // Show notification
+                showNotification('Sepet temizlendi', 'success');
+                
+                // Refresh page to show empty cart
+                location.reload();
+            }
+        }
+        
+        function continueShopping() {
+            window.location.href = '/';
+        }
+        
+        function proceedToCheckout() {
+            // Check if cart has items
+            const cartItems = document.querySelectorAll('.cart-item');
+            if (cartItems.length === 0) {
+                showNotification('Sepetinizde ürün bulunmuyor', 'warning');
+                return;
+            }
+            
+            // Proceed to checkout
+            window.location.href = '/checkout';
+        }
+        
+        function updateCartCount() {
+            const cartItems = document.querySelectorAll('.cart-item');
+            const cartCount = cartItems.length;
+            
+            // Update cart badge in header
+            const cartBadge = document.querySelector('.fa-shopping-cart + .badge');
+            if (cartBadge) {
+                cartBadge.textContent = cartCount;
+                if (cartCount === 0) {
+                    cartBadge.style.display = 'none';
+                }
+            }
+            
+            // Update cart count in title
+            const cartCountBadge = document.querySelector('.cart-items h2 .badge');
+            if (cartCountBadge) {
+                cartCountBadge.textContent = `${cartCount} ürün`;
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+        
+        // Initialize cart functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+        });
+    </script>
+}
