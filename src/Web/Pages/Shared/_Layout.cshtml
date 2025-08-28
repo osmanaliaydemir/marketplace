@@ -72,9 +72,20 @@
                     }
                     else if (User.IsInRole("Seller"))
                     {
-                        <a class="btn btn-outline-secondary me-2" href="/satici/panel">
-                            <i class="fas fa-gauge me-2"></i>Satıcı Paneli
-                        </a>
+                        <div class="dropdown me-2">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-gauge me-2"></i>Satıcı Paneli
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/satici/panel"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                                <li><a class="dropdown-item" href="/satici/urunler"><i class="fas fa-box me-2"></i>Ürünlerim</a></li>
+                                <li><a class="dropdown-item" href="/satici/siparisler"><i class="fas fa-shopping-cart me-2"></i>Siparişler</a></li>
+                                <li><a class="dropdown-item" href="/satici/raporlar/satis"><i class="fas fa-chart-line me-2"></i>Satış Raporları</a></li>
+                                <li><a class="dropdown-item" href="/satici/raporlar/stok"><i class="fas fa-chart-bar me-2"></i>Stok Raporları</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/satici/magaza"><i class="fas fa-store me-2"></i>Mağaza Bilgileri</a></li>
+                            </ul>
+                        </div>
                         <form method="post" action="/cikis" class="d-inline">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="btn btn-outline-danger"><i class="fas fa-sign-out-alt me-2"></i>Çıkış</button>

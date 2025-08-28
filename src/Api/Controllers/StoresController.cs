@@ -46,6 +46,53 @@ public sealed class StoresController : ControllerBase
         }
     }
 
+    [HttpPut("mine")]
+    [Authorize(Roles = "Seller,Admin")]
+    public async Task<ActionResult<StoreDetailDto>> UpdateMine([FromBody] UpdateMyStoreRequest request)
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !long.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { Message = "Kullanıcı kimliği doğrulanamadı" });
+            }
+
+            var store = await _storeService.GetByCurrentSellerAsync(userId);
+            if (store == null)
+            {
+                return NotFound(new { Message = "Mağaza bulunamadı" });
+            }
+
+            var updateRequest = new Application.DTOs.Stores.StoreUpdateRequest
+            {
+                Name = request.Name,
+                Slug = request.Slug,
+                Description = request.Description,
+                Phone = request.Phone,
+                Email = request.Email,
+                Website = request.Website,
+                Address = request.Address,
+                Currency = request.Currency,
+                Language = request.Language,
+                IsActive = request.IsActive
+            };
+
+            var updatedStore = await _storeService.UpdateAsync(store.Id, updateRequest);
+            if (updatedStore == null)
+            {
+                return BadRequest(new { Message = "Mağaza güncellenemedi" });
+            }
+
+            return Ok(updatedStore);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating current seller's store");
+            return StatusCode(500, new { Message = "Mağaza güncellenirken bir hata oluştu" });
+        }
+    }
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<StoreListDto>>> GetAll()
     {
@@ -249,4 +296,18 @@ public sealed class StoreStatsDto
 public sealed class UpdateStoreStatusRequest
 {
     public bool IsActive { get; set; }
+}
+
+public sealed class UpdateMyStoreRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string? Phone { get; set; }
+    public string? Email { get; set; }
+    public string? Website { get; set; }
+    public string? Address { get; set; }
+    public string Currency { get; set; } = "TRY";
+    public string Language { get; set; } = "tr";
+    public bool IsActive { get; set; } = true;
 }

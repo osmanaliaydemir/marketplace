@@ -64,10 +64,19 @@ public sealed class StoreService : IStoreService
                 throw new InvalidOperationException($"Store with ID {id} not found");
 
             store.Name = request.Name;
-            store.Slug = GenerateSlug(request.Name);
+            store.Slug = request.Slug;
             store.LogoUrl = request.LogoUrl;
             store.BannerUrl = request.BannerUrl;
             store.Description = request.Description;
+            store.Phone = request.Phone;
+            store.Email = request.Email;
+            store.Website = request.Website;
+            store.Address = request.Address;
+            store.Currency = request.Currency;
+            store.Language = request.Language;
+            // Backward compatibility
+            store.ContactPhone = request.Phone;
+            store.ContactEmail = request.Email;
             store.IsActive = request.IsActive;
             store.ModifiedAt = DateTime.UtcNow;
 
@@ -118,6 +127,12 @@ public sealed class StoreService : IStoreService
                 LogoUrl = store.LogoUrl,
                 BannerUrl = store.BannerUrl,
                 Description = store.Description,
+                Phone = store.Phone ?? store.ContactPhone,
+                Email = store.Email ?? store.ContactEmail,
+                Website = store.Website,
+                Address = store.Address,
+                Currency = store.Currency,
+                Language = store.Language,
                 IsActive = store.IsActive,
                 CreatedAt = store.CreatedAt,
                 ModifiedAt = store.ModifiedAt,

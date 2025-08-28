@@ -2,8 +2,270 @@
 @model Web.Pages.Seller.DashboardModel
 @{
     ViewData["Title"] = "Satıcı Paneli";
+    ViewData["Description"] = "Mağaza performansınızı takip edin ve yönetin";
 }
-<section class="container py-4">
-    <h1 class="h4 mb-3">Satıcı Paneli</h1>
-    <p>Özet, son siparişler, satış istatistikleri burada gösterilecek.</p>
-</section>
+
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2">
+                        <i class="fas fa-tachometer-alt me-2 text-primary"></i>Hoş Geldiniz!
+                    </h1>
+                    <p class="text-muted mb-0">Mağaza performansınızı takip edin ve hızlı işlemler yapın</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-primary" onclick="dashboardManager.refreshData()">
+                        <i class="fas fa-sync-alt me-2"></i>Yenile
+                    </button>
+                    <a href="/satici/urunler/ekle" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Yeni Ürün Ekle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+        <p class="mt-2 text-muted">Dashboard verileri yükleniyor...</p>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div id="dashboardContent" style="display: none;">
+        <!-- KPI Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card bg-primary text-white h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Günlük Satış</h6>
+                                <h3 id="dailySales" class="mb-0">₺0</h3>
+                                <small class="text-white-50">
+                                    <span id="dailySalesChange" class="me-1">0%</span>
+                                    <i id="dailySalesIcon" class="fas fa-arrow-up"></i>
+                                </small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card bg-success text-white h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Günlük Sipariş</h6>
+                                <h3 id="dailyOrders" class="mb-0">0</h3>
+                                <small class="text-white-50">
+                                    <span id="dailyOrdersChange" class="me-1">0%</span>
+                                    <i id="dailyOrdersIcon" class="fas fa-arrow-up"></i>
+                                </small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-shopping-cart fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card bg-info text-white h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Toplam Ürün</h6>
+                                <h3 id="totalProducts" class="mb-0">0</h3>
+                                <small class="text-white-50">
+                                    <span id="activeProducts" class="me-1">0 aktif</span>
+                                </small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-box fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card bg-warning text-white h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title">Bekleyen Sipariş</h6>
+                                <h3 id="pendingOrders" class="mb-0">0</h3>
+                                <small class="text-white-50">Onay bekliyor</small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-clock fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <div class="col-xl-8 mb-3">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-area me-2"></i>Haftalık Satış Trendi
+                        </h5>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary active" data-period="week">Hafta</button>
+                            <button type="button" class="btn btn-outline-primary" data-period="month">Ay</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="salesChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-pie me-2"></i>Kategori Dağılımı
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="categoryChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Orders & Quick Actions -->
+        <div class="row">
+            <div class="col-xl-8 mb-3">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Son Siparişler
+                        </h5>
+                        <a href="/satici/siparisler" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Sipariş No</th>
+                                        <th>Müşteri</th>
+                                        <th>Ürün</th>
+                                        <th>Tutar</th>
+                                        <th>Durum</th>
+                                        <th>Tarih</th>
+                                        <th>İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentOrdersTable">
+                                    <!-- JavaScript ile doldurulacak -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 mb-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bolt me-2"></i>Hızlı İşlemler
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="/satici/urunler/ekle" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Yeni Ürün Ekle
+                            </a>
+                            <a href="/satici/siparisler" class="btn btn-outline-primary">
+                                <i class="fas fa-shopping-cart me-2"></i>Siparişleri Görüntüle
+                            </a>
+                            <a href="/satici/raporlar/satis" class="btn btn-outline-info">
+                                <i class="fas fa-chart-line me-2"></i>Satış Raporları
+                            </a>
+                            <a href="/satici/magaza" class="btn btn-outline-secondary">
+                                <i class="fas fa-store me-2"></i>Mağaza Ayarları
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock Alerts -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Stok Uyarıları
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="stockAlerts">
+                            <!-- JavaScript ile doldurulacak -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-analytics me-2"></i>Performans Metrikleri
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <div class="border-end">
+                                    <h4 id="avgOrderValue" class="text-primary mb-1">₺0</h4>
+                                    <small class="text-muted">Ortalama Sipariş Tutarı</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="border-end">
+                                    <h4 id="conversionRate" class="text-success mb-1">0%</h4>
+                                    <small class="text-muted">Dönüşüm Oranı</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="border-end">
+                                    <h4 id="customerSatisfaction" class="text-info mb-1">0/5</h4>
+                                    <small class="text-muted">Müşteri Memnuniyeti</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h4 id="responseTime" class="text-warning mb-1">0s</h4>
+                                <small class="text-muted">Ortalama Yanıt Süresi</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/js/seller-dashboard.js"></script>
+}

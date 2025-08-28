@@ -312,6 +312,10 @@ public class CustomerProfileModel
 - [x] Real-time updates çalışır (SignalR)
 - [x] Toplu ürün işlemleri çalışır
 - [x] Bildirim sistemi aktif
+- [x] **Dashboard geliştirildi** - KPI kartları, grafikler, son siparişler, stok uyarıları
+- [x] **Mağaza yönetimi** - `/satici/magaza` sayfası eklendi, mağaza bilgileri düzenlenebilir
+- [x] **Store entity güncellendi** - Phone, Email, Website, Currency, Language alanları eklendi
+- [x] **Database migration script** - Store tablosu için SQL script hazırlandı
 
 ### **Sprint 4 - Customer Portal**
 - [ ] `/hesabim` erişilebilir
@@ -389,8 +393,8 @@ public class CustomerProfileModel
 
 ---
 
-*Son Güncelleme: 2024-12-28*
-*Proje Durumu: %45 Tamamlandı*
+*Son Güncelleme: 2024-12-19*
+*Proje Durumu: %55 Tamamlandı*
 *Aktif Sprint: Sprint 3 - Seller Portal Gelişmiş ✅*
-*Tahmini Tamamlanma: 7 Hafta*
+*Tahmini Tamamlanma: 6 Hafta*
 *Toplam Sprint: 7*

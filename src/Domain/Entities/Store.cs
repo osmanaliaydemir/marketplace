@@ -13,6 +13,11 @@ public sealed class Store : Domain.Models.AuditableEntity
     public string? ContactPhone { get; set; }
     public string? Address { get; set; }
     public string? WorkingHours { get; set; }
+    public string? Phone { get; set; }
+    public string? Email { get; set; }
+    public string? Website { get; set; }
+    public string Currency { get; set; } = "TRY";
+    public string Language { get; set; } = "tr";
     
     // Navigation properties
     public Seller Seller { get; set; } = null!;

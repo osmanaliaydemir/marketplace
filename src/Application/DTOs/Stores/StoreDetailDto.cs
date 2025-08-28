@@ -11,6 +11,12 @@ public sealed record StoreDetailDto
     public string? LogoUrl { get; init; }
     public string? BannerUrl { get; init; }
     public string? Description { get; init; }
+    public string? Phone { get; init; }
+    public string? Email { get; init; }
+    public string? Website { get; init; }
+    public string? Address { get; init; }
+    public string Currency { get; init; } = "TRY";
+    public string Language { get; init; } = "tr";
     public bool IsActive { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? ModifiedAt { get; init; }

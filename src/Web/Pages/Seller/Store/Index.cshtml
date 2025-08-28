@@ -1,0 +1,249 @@
+@page "/satici/magaza"
+@model Web.Pages.Seller.Store.IndexModel
+@{
+    ViewData["Title"] = "Mağaza Bilgileri";
+    ViewData["Description"] = "Mağaza bilgilerinizi düzenleyin ve güncelleyin";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-store me-2"></i>Mağaza Bilgileri
+                </h1>
+                <button type="button" class="btn btn-primary" onclick="storeManager.loadStoreData()">
+                    <i class="fas fa-sync-alt me-2"></i>Yenile
+                </button>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="text-center py-5" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Yükleniyor...</span>
+                </div>
+                <p class="mt-2 text-muted">Mağaza bilgileri yükleniyor...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="alert alert-danger" style="display: none;">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span id="errorText"></span>
+            </div>
+
+            <!-- Store Information Form -->
+            <div id="storeForm" style="display: none;">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-edit me-2"></i>Mağaza Bilgilerini Düzenle
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="storeEditForm">
+                            <div class="row">
+                                <!-- Basic Information -->
+                                <div class="col-md-6">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>Temel Bilgiler
+                                    </h6>
+                                    
+                                    <div class="mb-3">
+                                        <label for="storeName" class="form-label">Mağaza Adı *</label>
+                                        <input type="text" class="form-control" id="storeName" name="name" required>
+                                        <div class="form-text">Müşterilerin göreceği mağaza adı</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="storeSlug" class="form-label">Mağaza URL'i *</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">marketplace.com/</span>
+                                            <input type="text" class="form-control" id="storeSlug" name="slug" required>
+                                        </div>
+                                        <div class="form-text">Benzersiz ve SEO dostu URL</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="storeDescription" class="form-label">Mağaza Açıklaması</label>
+                                        <textarea class="form-control" id="storeDescription" name="description" rows="4"></textarea>
+                                        <div class="form-text">Mağazanız hakkında kısa açıklama</div>
+                                    </div>
+                                </div>
+
+                                <!-- Contact & Social -->
+                                <div class="col-md-6">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-phone me-2"></i>İletişim Bilgileri
+                                    </h6>
+                                    
+                                    <div class="mb-3">
+                                        <label for="storePhone" class="form-label">Telefon</label>
+                                        <input type="tel" class="form-control" id="storePhone" name="phone">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="storeEmail" class="form-label">E-posta</label>
+                                        <input type="email" class="form-control" id="storeEmail" name="email">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="storeWebsite" class="form-label">Web Sitesi</label>
+                                        <input type="url" class="form-control" id="storeWebsite" name="website" placeholder="https://">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="storeAddress" class="form-label">Adres</label>
+                                        <textarea class="form-control" id="storeAddress" name="address" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Store Settings -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-cog me-2"></i>Mağaza Ayarları
+                                    </h6>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="storeLogo" class="form-label">Mağaza Logosu</label>
+                                                <input type="file" class="form-control" id="storeLogo" name="logo" accept="image/*">
+                                                <div class="form-text">PNG, JPG veya GIF (Max: 2MB)</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="storeBanner" class="form-label">Mağaza Banner'ı</label>
+                                                <input type="file" class="form-control" id="storeBanner" name="banner" accept="image/*">
+                                                <div class="form-text">Geniş banner görseli (Max: 5MB)</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="storeCurrency" class="form-label">Para Birimi</label>
+                                                <select class="form-select" id="storeCurrency" name="currency">
+                                                    <option value="TRY">Türk Lirası (₺)</option>
+                                                    <option value="USD">Amerikan Doları ($)</option>
+                                                    <option value="EUR">Euro (€)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="storeLanguage" class="form-label">Dil</label>
+                                                <select class="form-select" id="storeLanguage" name="language">
+                                                    <option value="tr">Türkçe</option>
+                                                    <option value="en">English</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="storeIsActive" name="isActive">
+                                            <label class="form-check-label" for="storeIsActive">
+                                                Mağaza Aktif
+                                            </label>
+                                            <div class="form-text">Mağazanızı geçici olarak kapatabilirsiniz</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <hr>
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <button type="button" class="btn btn-secondary" onclick="storeManager.resetForm()">
+                                            <i class="fas fa-undo me-2"></i>Geri Al
+                                        </button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save me-2"></i>Değişiklikleri Kaydet
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Store Statistics -->
+            <div id="storeStats" class="mt-4" style="display: none;">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="card-title">Toplam Ürün</h6>
+                                        <h3 id="totalProducts">0</h3>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-box fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="card-title">Aktif Ürün</h6>
+                                        <h3 id="activeProducts">0</h3>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-check-circle fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="card-title">Toplam Sipariş</h6>
+                                        <h3 id="totalOrders">0</h3>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-shopping-cart fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="card-title">Bekleyen Sipariş</h6>
+                                        <h3 id="pendingOrders">0</h3>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-clock fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/seller-store.js"></script>
+}
