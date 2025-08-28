@@ -1,5 +1,7 @@
 using Application.Abstractions;
 using Application.DTOs.Orders;
+using Application.DTOs.Customers;
+using Application.Exceptions;
 using Domain.Entities;
 using Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -821,5 +823,126 @@ public sealed class OrderService : IOrderService
         return itemDtos;
     }
     
+    #endregion
+
+    #region Customer API Methods
+
+    public async Task<PaginatedResult<CustomerOrderDto>> GetOrdersByUserIdAsync(long userId, int page = 1, int pageSize = 10)
+    {
+        try
+        {
+            var orders = await _orderRepository.GetByCustomerAsync(userId);
+            var totalCount = orders.Count();
+            
+            var paginatedOrders = orders
+                .OrderByDescending(o => o.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var customerOrderDtos = new List<CustomerOrderDto>();
+            
+            foreach (var order in paginatedOrders)
+            {
+                var orderItems = await _orderItemRepository.GetByOrderAsync(order.Id);
+                var itemDtos = new List<CustomerOrderItemDto>();
+                
+                foreach (var item in orderItems)
+                {
+                    var product = await _productRepository.GetByIdAsync(item.ProductId);
+                    itemDtos.Add(new CustomerOrderItemDto
+                    {
+                        ProductId = item.ProductId,
+                        ProductName = product?.Name ?? "Unknown Product",
+                        ProductImage =  "/images/default-product.jpg",
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice
+                    });
+                }
+
+                var customer = await _customerRepository.GetByIdAsync(order.CustomerId);
+                customerOrderDtos.Add(new CustomerOrderDto
+                {
+                    Id = order.Id,
+                    OrderNumber = order.OrderNumber,
+                    Status = order.Status.ToString(),
+                    TotalAmount = order.TotalAmount,
+                    CreatedAt = order.CreatedAt,
+                    CustomerName = customer?.User?.FullName ?? "Unknown",
+                    CustomerEmail = customer?.User?.Email ?? "Unknown",
+                    Items = itemDtos
+                });
+            }
+
+            return new PaginatedResult<CustomerOrderDto>
+            {
+                Items = customerOrderDtos,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting orders for user ID: {UserId}", userId);
+            throw new RepositoryException("Sipariş bilgileri alınırken bir hata oluştu", "GetOrdersByUserId", "Order", ex);
+        }
+    }
+
+    public async Task<PaginatedResult<CustomerWishlistItemDto>> GetWishlistItemsByUserIdAsync(long userId, int page = 1, int pageSize = 10)
+    {
+        try
+        {
+            // TODO: Wishlist tablosu oluşturulduğunda bu kısım güncellenecek
+            // Şu anda mock data döndürüyoruz
+            var mockWishlistItems = new List<CustomerWishlistItemDto>
+            {
+                new CustomerWishlistItemDto
+                {
+                    Id = 1,
+                    ProductId = 1,
+                    ProductName = "iPhone 15 Pro",
+                    ProductImage = "/images/iphone15pro.jpg",
+                    Price = 299.99m,
+                    IsInStock = true,
+                    StockQuantity = 15,
+                    AddedAt = DateTime.UtcNow.AddDays(-10)
+                },
+                new CustomerWishlistItemDto
+                {
+                    Id = 2,
+                    ProductId = 2,
+                    ProductName = "AirPods Pro",
+                    ProductImage = "/images/airpodspro.jpg",
+                    Price = 149.99m,
+                    IsInStock = true,
+                    StockQuantity = 25,
+                    AddedAt = DateTime.UtcNow.AddDays(-5)
+                }
+            };
+
+            var totalCount = mockWishlistItems.Count;
+            var paginatedItems = mockWishlistItems
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return new PaginatedResult<CustomerWishlistItemDto>
+            {
+                Items = paginatedItems,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting wishlist items for user ID: {UserId}", userId);
+            throw new RepositoryException("Favori ürünler alınırken bir hata oluştu", "GetWishlistItemsByUserId", "Wishlist", ex);
+        }
+    }
+
     #endregion
 }

@@ -263,6 +263,28 @@ public sealed class AppUserService : IAppUserService
         }
     }
 
+    public async Task<bool> UpdatePasswordAsync(long userId, string newPasswordHash)
+    {
+        try
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            user.PasswordHash = newPasswordHash;
+            user.ModifiedAt = DateTime.UtcNow;
+            await _userRepository.UpdateAsync(user);
+
+            _logger.LogInformation("Password updated successfully for user: {UserId}", userId);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating password for user: {UserId}", userId);
+            throw;
+        }
+    }
+
     public async Task<UserSearchResponse> SearchAsync(UserSearchRequest request)
     {
         try

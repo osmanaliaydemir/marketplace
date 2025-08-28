@@ -1,3 +1,7 @@
+using Application.Services;
+using Infrastructure;
+using Microsoft.AspNetCore.Authentication.Cookies;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,6 +11,10 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizeFolder("/Satici", "SellerOnly");
     options.Conventions.AuthorizeFolder("/Hesabim", "CustomerOnly");
 });
+
+// Add Application and Infrastructure services
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 // Add HttpContextAccessor for ApiClient
 builder.Services.AddHttpContextAccessor();
@@ -22,7 +30,7 @@ builder.Services.AddAntiforgery(options =>
 });
 
 // Authentication & Authorization
-builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/giris";

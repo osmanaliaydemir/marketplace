@@ -1,9 +1,14 @@
 using Infrastructure.Persistence;
+using Infrastructure.Persistence.Repositories;
+using Infrastructure.Persistence.Context;
+using Infrastructure.Persistence.Naming;
 using Infrastructure.Payments;
+using Infrastructure.Services;
 using Infrastructure.Caching;
 using Infrastructure.Logging;
-using Microsoft.Extensions.Configuration;
+using Application.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
 
 namespace Infrastructure;
@@ -16,9 +21,15 @@ public static class InfrastructureRegistration
 		services.AddPersistence(configuration);
 		
 		// Payments
-		services.AddScoped<IPaymentProvider, PaytrAdapter>();
+		services.AddScoped<Infrastructure.Payments.IPaymentProvider, PaytrAdapter>();
 		services.AddScoped<Application.Abstractions.IPaymentProvider, PaymentProvider>();
 		services.AddHttpClient<PaytrAdapter>();
+		
+		// Email Service
+		services.AddScoped<IEmailService, EmailService>();
+		
+		// Password Reset Service
+		services.AddScoped<IPasswordResetService, PasswordResetService>();
 		
 		// Caching
 		services.AddSingleton<IConnectionMultiplexer>(provider =>

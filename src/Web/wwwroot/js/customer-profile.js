@@ -52,7 +52,7 @@ class CustomerProfileManager {
             
         } catch (error) {
             console.error('Error loading profile data:', error);
-            this.showError('Profil bilgileri yüklenirken bir hata oluştu');
+            this.showError('Profil bilgileri yüklenirken bir hata oluştu: ' + error.message);
         } finally {
             this.showLoading(false);
         }
@@ -60,49 +60,44 @@ class CustomerProfileManager {
 
     async fetchProfileData() {
         try {
-            const response = await fetch('/api/customers/profile', {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            const response = await fetch('?handler=GetProfile', {
+                method: 'POST',
+                headers: { 
+                    'RequestVerificationToken': this.getAntiForgeryToken(),
+                    'Content-Type': 'application/json'
+                }
             });
             
             if (response.ok) {
                 return await response.json();
             }
-            return this.getDefaultProfileData();
+            
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         } catch (error) {
             console.error('Error fetching profile:', error);
-            return this.getDefaultProfileData();
+            throw error;
         }
     }
 
     async fetchAddressesData() {
         try {
-            const response = await fetch('/api/customers/addresses', {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            const response = await fetch('?handler=GetAddresses', {
+                method: 'POST',
+                headers: { 
+                    'RequestVerificationToken': this.getAntiForgeryToken(),
+                    'Content-Type': 'application/json'
+                }
             });
             
             if (response.ok) {
                 return await response.json();
             }
-            return [];
+            
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         } catch (error) {
             console.error('Error fetching addresses:', error);
-            return [];
+            throw error;
         }
-    }
-
-    getDefaultProfileData() {
-        return {
-            firstName: '',
-            lastName: '',
-            email: '',
-            phone: '',
-            birthDate: '',
-            gender: '',
-            memberSince: new Date().toISOString(),
-            totalOrders: 0,
-            totalWishlist: 0,
-            lastLogin: new Date().toISOString()
-        };
     }
 
     populateProfileForm(profileData) {
@@ -211,11 +206,11 @@ class CustomerProfileManager {
                 return;
             }
 
-            const response = await fetch('/api/customers/profile', {
-                method: 'PUT',
+            const response = await fetch('?handler=UpdateProfile', {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'RequestVerificationToken': this.getAntiForgeryToken()
                 },
                 body: JSON.stringify(formData)
             });
@@ -303,14 +298,14 @@ class CustomerProfileManager {
             }
 
             const addressId = document.getElementById('addressId').value;
-            const url = addressId ? `/api/customers/addresses/${addressId}` : '/api/customers/addresses';
-            const method = addressId ? 'PUT' : 'POST';
+            const handler = addressId ? 'UpdateAddress' : 'SaveAddress';
+            const url = `?handler=${handler}`;
 
             const response = await fetch(url, {
-                method: method,
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'RequestVerificationToken': this.getAntiForgeryToken()
                 },
                 body: JSON.stringify(formData)
             });
@@ -382,9 +377,11 @@ class CustomerProfileManager {
         }
 
         try {
-            const response = await fetch(`/api/customers/addresses/${addressId}`, {
-                method: 'DELETE',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            const response = await fetch(`?handler=DeleteAddress&id=${addressId}`, {
+                method: 'POST',
+                headers: { 
+                    'RequestVerificationToken': this.getAntiForgeryToken() 
+                }
             });
 
             if (response.ok) {
@@ -414,11 +411,11 @@ class CustomerProfileManager {
                 return;
             }
 
-            const response = await fetch('/api/customers/change-password', {
+            const response = await fetch('?handler=ChangePassword', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'RequestVerificationToken': this.getAntiForgeryToken()
                 },
                 body: JSON.stringify(formData)
             });
@@ -534,6 +531,11 @@ class CustomerProfileManager {
         setTimeout(() => {
             notification.remove();
         }, 5000);
+    }
+
+    // Anti-forgery token alma metodu
+    getAntiForgeryToken() {
+        return document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
     }
 }
 

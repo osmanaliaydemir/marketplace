@@ -16,6 +16,7 @@ public interface IAppUserService
     Task<bool> VerifyPasswordAsync(string emailOrUsername, string password);
     Task<bool> IsUserActiveAsync(string emailOrUsername);
     Task<bool> ChangePasswordAsync(ChangePasswordRequest request);
+    Task<bool> UpdatePasswordAsync(long userId, string newPasswordHash);
     Task<UserSearchResponse> SearchAsync(UserSearchRequest request);
     Task<UserDto?> GetCurrentUserAsync();
 }

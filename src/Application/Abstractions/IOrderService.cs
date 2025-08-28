@@ -1,5 +1,6 @@
 using Application.DTOs.Orders;
 using Application.DTOs.Payments;
+using Application.DTOs.Customers;
 
 namespace Application.Abstractions;
 
@@ -15,6 +16,10 @@ public interface IOrderService
     // Customer Orders
     Task<OrderListResponse> GetCustomerOrdersAsync(long customerId, OrderListRequest request);
     Task<OrderDetailDto?> GetCustomerOrderAsync(long customerId, long orderId);
+    
+    // Customer Orders with Pagination (for API)
+    Task<PaginatedResult<CustomerOrderDto>> GetOrdersByUserIdAsync(long userId, int page = 1, int pageSize = 10);
+    Task<PaginatedResult<CustomerWishlistItemDto>> GetWishlistItemsByUserIdAsync(long userId, int page = 1, int pageSize = 10);
     
     // Store Orders
     Task<OrderListResponse> GetStoreOrdersAsync(long storeId, OrderListRequest request);

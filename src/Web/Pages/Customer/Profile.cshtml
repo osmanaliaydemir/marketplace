@@ -5,6 +5,9 @@
     ViewData["Description"] = "Profil bilgilerinizi yönetin ve hesap ayarlarınızı güncelleyin";
 }
 
+@* Anti-forgery token *@
+@Html.AntiForgeryToken()
+
 <div class="container py-4">
     <!-- Page Header -->
     <div class="row mb-4">

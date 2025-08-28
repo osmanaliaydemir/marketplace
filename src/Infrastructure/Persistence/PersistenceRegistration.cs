@@ -34,6 +34,8 @@ public static class PersistenceRegistration
 		services.AddScoped<ICategoryRepository, CategoryRepository>();
 		services.AddScoped<IOrderRepository, OrderRepository>();
 		services.AddScoped<ICustomerRepository, CustomerRepository>();
+		services.AddScoped<ICustomerAddressRepository, CustomerAddressRepository>();
+		services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
 		services.AddScoped<IPaymentRepository, PaymentRepository>();
 		services.AddScoped<IInventoryRepository, InventoryRepository>();
 		services.AddScoped<ISellerRepository, SellerRepository>();
