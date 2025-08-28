@@ -318,10 +318,11 @@ public class CustomerProfileModel
 - [x] **Database migration script** - Store tablosu için SQL script hazırlandı
 
 ### **Sprint 4 - Customer Portal**
-- [ ] `/hesabim` erişilebilir
-- [ ] Sipariş geçmişi görüntülenir
-- [ ] Türkçe URL'ler çalışır
-- [ ] Customer navigation aktif
+- [x] `/hesabim` erişilebilir - Profil yönetimi, adres yönetimi, hesap ayarları
+- [x] `/siparislerim` erişilebilir - Sipariş geçmişi, filtreleme, detay görüntüleme
+- [x] `/favorilerim` erişilebilir - Favori ürünler, wishlist yönetimi
+- [x] Türkçe URL'ler çalışır - /hesabim, /siparislerim, /favorilerim
+- [x] Customer navigation aktif - Breadcrumb navigation, responsive tasarım
 
 ### **Sprint 5 - Security**
 - [ ] Data isolation çalışır
@@ -394,7 +395,7 @@ public class CustomerProfileModel
 ---
 
 *Son Güncelleme: 2024-12-19*
-*Proje Durumu: %55 Tamamlandı*
-*Aktif Sprint: Sprint 3 - Seller Portal Gelişmiş ✅*
-*Tahmini Tamamlanma: 6 Hafta*
+*Proje Durumu: %70 Tamamlandı*
+*Aktif Sprint: Sprint 4 - Customer Portal ✅*
+*Tahmini Tamamlanma: 3 Hafta*
 *Toplam Sprint: 7*

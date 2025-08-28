@@ -2,8 +2,265 @@
 @model Web.Pages.Customer.Orders.DetailsModel
 @{
     ViewData["Title"] = "Sipariş Detayı";
+    ViewData["Description"] = "Sipariş detaylarını görüntüleyin ve takip edin";
 }
-<section class="container py-4">
-    <h1 class="h4 mb-3">Sipariş Detayı</h1>
-    <p>Sipariş detayları burada yer alacak.</p>
-</section>
+
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
+                    <li class="breadcrumb-item"><a href="/hesabim">Hesabım</a></li>
+                    <li class="breadcrumb-item"><a href="/siparislerim">Siparişlerim</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Sipariş Detayı</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2">
+                        <i class="fas fa-receipt me-2 text-primary"></i>Sipariş Detayı
+                    </h1>
+                    <p class="text-muted mb-0">Sipariş #<span id="orderNumber">-</span> detayları</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-primary" onclick="orderDetailsManager.printOrder()">
+                        <i class="fas fa-print me-2"></i>Yazdır
+                    </button>
+                    <a href="/siparislerim" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Geri Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+        <p class="mt-2 text-muted">Sipariş detayları yükleniyor...</p>
+    </div>
+
+    <!-- Order Details Content -->
+    <div id="orderDetailsContent" style="display: none;">
+        <!-- Order Status Timeline -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-route me-2"></i>Sipariş Durumu
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="orderTimeline">
+                    <!-- JavaScript ile doldurulacak -->
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Order Information -->
+            <div class="col-lg-8">
+                <!-- Order Items -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-box me-2"></i>Sipariş Edilen Ürünler
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="orderItems">
+                            <!-- JavaScript ile doldurulacak -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shipping-fast me-2"></i>Kargo Bilgileri
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="shippingInfo">
+                            <!-- JavaScript ile doldurulacak -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Notes -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-sticky-note me-2"></i>Sipariş Notları
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="orderNotes">
+                            <!-- JavaScript ile doldurulacak -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <!-- Order Summary Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-calculator me-2"></i>Sipariş Özeti
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="orderSummary">
+                            <!-- JavaScript ile doldurulacak -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-user me-2"></i>Müşteri Bilgileri
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="customerInfo">
+                            <!-- JavaScript ile doldurulacak -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Address -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-map-marker-alt me-2"></i>Teslimat Adresi
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="shippingAddress">
+                            <!-- JavaScript ile doldurulacak -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing Address -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-credit-card me-2"></i>Fatura Adresi
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="billingAddress">
+                            <!-- JavaScript ile doldurulacak -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-bolt me-2"></i>Hızlı İşlemler
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" onclick="orderDetailsManager.reorder()">
+                                <i class="fas fa-redo me-2"></i>Tekrar Sipariş Ver
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" onclick="orderDetailsManager.trackOrder()">
+                                <i class="fas fa-truck me-2"></i>Kargo Takip
+                            </button>
+                            <button type="button" class="btn btn-outline-info" onclick="orderDetailsManager.contactSupport()">
+                                <i class="fas fa-headset me-2"></i>Destek Al
+                            </button>
+                            <button type="button" class="btn btn-outline-warning" onclick="orderDetailsManager.cancelOrder()" id="cancelOrderBtn" style="display: none;">
+                                <i class="fas fa-times me-2"></i>Siparişi İptal Et
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Order Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sipariş İptali</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Siparişinizi iptal etmek istediğinizden emin misiniz?</p>
+                <div class="mb-3">
+                    <label for="cancelReason" class="form-label">İptal Nedeni</label>
+                    <select class="form-select" id="cancelReason">
+                        <option value="">Seçiniz</option>
+                        <option value="ChangedMind">Fikrimi değiştirdim</option>
+                        <option value="FoundBetterPrice">Daha iyi fiyat buldum</option>
+                        <option value="NoLongerNeeded">Artık ihtiyacım yok</option>
+                        <option value="DeliveryTooLong">Teslimat çok uzun</option>
+                        <option value="Other">Diğer</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="cancelComment" class="form-label">Açıklama (Opsiyonel)</label>
+                    <textarea class="form-control" id="cancelComment" rows="3" placeholder="İptal nedeninizi detaylandırabilirsiniz..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-danger" onclick="orderDetailsManager.confirmCancelOrder()">Siparişi İptal Et</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Support Modal -->
+<div class="modal fade" id="contactSupportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Destek Al</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Siparişinizle ilgili yardıma mı ihtiyacınız var?</p>
+                <div class="mb-3">
+                    <label for="supportSubject" class="form-label">Konu</label>
+                    <select class="form-select" id="supportSubject">
+                        <option value="">Seçiniz</option>
+                        <option value="OrderStatus">Sipariş Durumu</option>
+                        <option value="Shipping">Kargo</option>
+                        <option value="Payment">Ödeme</option>
+                        <option value="ProductIssue">Ürün Sorunu</option>
+                        <option value="Other">Diğer</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="supportMessage" class="form-label">Mesajınız</label>
+                    <textarea class="form-control" id="supportMessage" rows="4" placeholder="Size nasıl yardımcı olabiliriz?"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="orderDetailsManager.sendSupportMessage()">Gönder</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/customer-order-details.js"></script>
+}

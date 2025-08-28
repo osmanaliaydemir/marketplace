@@ -2,8 +2,135 @@
 @model Web.Pages.Customer.WishlistModel
 @{
     ViewData["Title"] = "Favorilerim";
+    ViewData["Description"] = "Favori ürünlerinizi görüntüleyin ve yönetin";
 }
-<section class="container py-4">
-    <h1 class="h4 mb-3">Favorilerim</h1>
-    <p>Favori ürünler burada yer alacak.</p>
-</section>
+
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
+                    <li class="breadcrumb-item"><a href="/hesabim">Hesabım</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Favorilerim</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-2">
+                <i class="fas fa-heart me-2 text-danger"></i>Favorilerim
+            </h1>
+            <p class="text-muted mb-0">Beğendiğiniz ürünleri favorilerinize ekleyin ve kolayca erişin</p>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+        <p class="mt-2 text-muted">Favori ürünler yükleniyor...</p>
+    </div>
+
+    <!-- Wishlist Content -->
+    <div id="wishlistContent" style="display: none;">
+        <!-- Wishlist Stats -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-heart fa-2x mb-2"></i>
+                        <h4 id="totalWishlistItems">0</h4>
+                        <p class="mb-0">Toplam Favori</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-tags fa-2x mb-2"></i>
+                        <h4 id="totalWishlistValue">₺0</h4>
+                        <p class="mb-0">Toplam Değer</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                        <h4 id="availableItems">0</h4>
+                        <p class="mb-0">Stokta Olan</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Bar -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-primary" onclick="wishlistManager.selectAll()">
+                        <i class="fas fa-check-square me-2"></i>Tümünü Seç
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="wishlistManager.deselectAll()">
+                        <i class="fas fa-square me-2"></i>Seçimi Kaldır
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" onclick="wishlistManager.removeSelected()">
+                        <i class="fas fa-trash me-2"></i>Seçilenleri Kaldır
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <button type="button" class="btn btn-primary" onclick="wishlistManager.addSelectedToCart()">
+                    <i class="fas fa-shopping-cart me-2"></i>Seçilenleri Sepete Ekle
+                </button>
+            </div>
+        </div>
+
+        <!-- Wishlist Items -->
+        <div id="wishlistItems">
+            <!-- JavaScript ile doldurulacak -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyWishlist" class="text-center py-5" style="display: none;">
+            <i class="fas fa-heart-broken fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">Henüz favori ürününüz yok</h4>
+            <p class="text-muted mb-4">Beğendiğiniz ürünleri favorilerinize ekleyerek daha sonra kolayca bulabilirsiniz</p>
+            <a href="/urunler" class="btn btn-primary">
+                <i class="fas fa-shopping-bag me-2"></i>Alışverişe Başla
+            </a>
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="d-flex justify-content-center mt-4" style="display: none;">
+            <!-- JavaScript ile doldurulacak -->
+        </div>
+    </div>
+</div>
+
+<!-- Product Quick View Modal -->
+<div class="modal fade" id="productQuickViewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quickViewProductTitle">Ürün Detayı</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="quickViewContent">
+                    <!-- JavaScript ile doldurulacak -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="quickViewAddToCartBtn">
+                    <i class="fas fa-shopping-cart me-2"></i>Sepete Ekle
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/customer-wishlist.js"></script>
+}

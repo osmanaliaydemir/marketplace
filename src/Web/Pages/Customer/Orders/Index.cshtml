@@ -2,8 +2,158 @@
 @model Web.Pages.Customer.Orders.IndexModel
 @{
     ViewData["Title"] = "Siparişlerim";
+    ViewData["Description"] = "Sipariş geçmişinizi görüntüleyin ve takip edin";
 }
-<section class="container py-4">
-    <h1 class="h4 mb-3">Siparişlerim</h1>
-    <p>Sipariş listesi burada yer alacak.</p>
-</section>
+
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
+                    <li class="breadcrumb-item"><a href="/hesabim">Hesabım</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Siparişlerim</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-2">
+                <i class="fas fa-shopping-bag me-2 text-primary"></i>Siparişlerim
+            </h1>
+            <p class="text-muted mb-0">Tüm siparişlerinizi görüntüleyin ve durumlarını takip edin</p>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+        <p class="mt-2 text-muted">Siparişler yükleniyor...</p>
+    </div>
+
+    <!-- Orders Content -->
+    <div id="ordersContent" style="display: none;">
+        <!-- Orders Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-shopping-bag fa-2x mb-2"></i>
+                        <h4 id="totalOrders">0</h4>
+                        <p class="mb-0">Toplam Sipariş</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle fa-2x mb-2"></i>
+                        <h4 id="completedOrders">0</h4>
+                        <p class="mb-0">Tamamlanan</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clock fa-2x mb-2"></i>
+                        <h4 id="pendingOrders">0</h4>
+                        <p class="mb-0">Bekleyen</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-truck fa-2x mb-2"></i>
+                        <h4 id="shippedOrders">0</h4>
+                        <p class="mb-0">Kargoda</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="statusFilter" class="form-label">Durum</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="">Tümü</option>
+                            <option value="Pending">Bekliyor</option>
+                            <option value="Confirmed">Onaylandı</option>
+                            <option value="Processing">Hazırlanıyor</option>
+                            <option value="Shipped">Kargoda</option>
+                            <option value="Delivered">Teslim Edildi</option>
+                            <option value="Cancelled">İptal Edildi</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dateFromFilter" class="form-label">Başlangıç Tarihi</label>
+                        <input type="date" class="form-control" id="dateFromFilter">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dateToFilter" class="form-label">Bitiş Tarihi</label>
+                        <input type="date" class="form-control" id="dateToFilter">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-primary" onclick="ordersManager.applyFilters()">
+                                <i class="fas fa-filter me-2"></i>Filtrele
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders List -->
+        <div id="ordersList">
+            <!-- JavaScript ile doldurulacak -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyOrders" class="text-center py-5" style="display: none;">
+            <i class="fas fa-shopping-bag fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">Henüz siparişiniz yok</h4>
+            <p class="text-muted mb-4">İlk siparişinizi vermek için alışverişe başlayın</p>
+            <a href="/urunler" class="btn btn-primary">
+                <i class="fas fa-shopping-bag me-2"></i>Alışverişe Başla
+            </a>
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="d-flex justify-content-center mt-4" style="display: none;">
+            <!-- JavaScript ile doldurulacak -->
+        </div>
+    </div>
+</div>
+
+<!-- Order Details Modal -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderDetailsTitle">Sipariş Detayı</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="orderDetailsContent">
+                    <!-- JavaScript ile doldurulacak -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="reorderBtn" style="display: none;">
+                    <i class="fas fa-redo me-2"></i>Tekrar Sipariş Ver
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/customer-orders.js"></script>
+}

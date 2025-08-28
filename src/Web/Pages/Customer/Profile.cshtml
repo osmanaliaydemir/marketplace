@@ -2,8 +2,289 @@
 @model Web.Pages.Customer.ProfileModel
 @{
     ViewData["Title"] = "Hesabım";
+    ViewData["Description"] = "Profil bilgilerinizi yönetin ve hesap ayarlarınızı güncelleyin";
 }
-<section class="container py-4">
-    <h1 class="h4 mb-3">Hesabım</h1>
-    <p>Profil bilgileri burada yer alacak.</p>
-</section>
+
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Hesabım</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-2">
+                <i class="fas fa-user-circle me-2 text-primary"></i>Hesabım
+            </h1>
+            <p class="text-muted mb-0">Profil bilgilerinizi yönetin ve hesap ayarlarınızı güncelleyin</p>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+        <p class="mt-2 text-muted">Profil bilgileri yükleniyor...</p>
+    </div>
+
+    <!-- Profile Content -->
+    <div id="profileContent" style="display: none;">
+        <div class="row">
+            <!-- Profile Information -->
+            <div class="col-lg-8 mb-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user me-2"></i>Profil Bilgileri
+                        </h5>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="profileManager.editProfile()">
+                            <i class="fas fa-edit me-2"></i>Düzenle
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <form id="profileForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="firstName" class="form-label">Ad *</label>
+                                    <input type="text" class="form-control" id="firstName" name="firstName" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="lastName" class="form-label">Soyad *</label>
+                                    <input type="text" class="form-control" id="lastName" name="lastName" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">E-posta *</label>
+                                <input type="email" class="form-control" id="email" name="email" required readonly>
+                                <div class="form-text">E-posta adresi değiştirilemez</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Telefon</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="+90 (5XX) XXX XX XX">
+                            </div>
+                            <div class="mb-3">
+                                <label for="birthDate" class="form-label">Doğum Tarihi</label>
+                                <input type="date" class="form-control" id="birthDate" name="birthDate">
+                            </div>
+                            <div class="mb-3">
+                                <label for="gender" class="form-label">Cinsiyet</label>
+                                <select class="form-select" id="gender" name="gender">
+                                    <option value="">Seçiniz</option>
+                                    <option value="Male">Erkek</option>
+                                    <option value="Female">Kadın</option>
+                                    <option value="Other">Diğer</option>
+                                </select>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary" id="saveProfileBtn">
+                                    <i class="fas fa-save me-2"></i>Kaydet
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="profileManager.cancelEdit()" id="cancelEditBtn" style="display: none;">
+                                    <i class="fas fa-times me-2"></i>İptal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Address Management -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-map-marker-alt me-2"></i>Adres Bilgileri
+                        </h5>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="profileManager.addAddress()">
+                            <i class="fas fa-plus me-2"></i>Yeni Adres
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="addressesList">
+                            <!-- JavaScript ile doldurulacak -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Account Summary -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Hesap Özeti
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">Üyelik Tarihi:</span>
+                            <span id="memberSince" class="fw-medium">-</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">Toplam Sipariş:</span>
+                            <span id="totalOrders" class="fw-medium">-</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">Favori Ürün:</span>
+                            <span id="totalWishlist" class="fw-medium">-</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Son Giriş:</span>
+                            <span id="lastLogin" class="fw-medium">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-bolt me-2"></i>Hızlı İşlemler
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="/siparislerim" class="btn btn-outline-primary">
+                                <i class="fas fa-shopping-bag me-2"></i>Siparişlerim
+                            </a>
+                            <a href="/favorilerim" class="btn btn-outline-info">
+                                <i class="fas fa-heart me-2"></i>Favorilerim
+                            </a>
+                            <button type="button" class="btn btn-outline-warning" onclick="profileManager.changePassword()">
+                                <i class="fas fa-key me-2"></i>Şifre Değiştir
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" onclick="profileManager.deleteAccount()">
+                                <i class="fas fa-trash me-2"></i>Hesabı Sil
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Status -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-shield-alt me-2"></i>Güvenlik Durumu
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <span class="small">E-posta doğrulandı</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <span class="small">İki faktörlü doğrulama</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            <span class="small">Son giriş: 2 gün önce</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Address Modal -->
+<div class="modal fade" id="addressModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addressModalTitle">Yeni Adres Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addressForm">
+                    <input type="hidden" id="addressId" name="addressId">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="addressTitle" class="form-label">Adres Başlığı *</label>
+                            <input type="text" class="form-control" id="addressTitle" name="addressTitle" placeholder="Ev, İş, vb." required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="recipientName" class="form-label">Alıcı Adı *</label>
+                            <input type="text" class="form-control" id="recipientName" name="recipientName" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addressLine1" class="form-label">Adres Satırı 1 *</label>
+                        <input type="text" class="form-control" id="addressLine1" name="addressLine1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addressLine2" class="form-label">Adres Satırı 2</label>
+                        <input type="text" class="form-control" id="addressLine2" name="addressLine2" placeholder="Apartman, daire, vb.">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="city" class="form-label">Şehir *</label>
+                            <input type="text" class="form-control" id="city" name="city" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="state" class="form-label">İlçe *</label>
+                            <input type="text" class="form-control" id="state" name="state" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="postalCode" class="form-label">Posta Kodu</label>
+                            <input type="text" class="form-control" id="postalCode" name="postalCode">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Telefon *</label>
+                        <input type="tel" class="form-control" id="addressPhone" name="phone" required>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="isDefault" name="isDefault">
+                        <label class="form-check-label" for="isDefault">
+                            Varsayılan adres olarak ayarla
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="profileManager.saveAddress()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Şifre Değiştir</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Mevcut Şifre *</label>
+                        <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">Yeni Şifre *</label>
+                        <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                        <div class="form-text">En az 8 karakter, büyük/küçük harf, rakam ve özel karakter içermelidir</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Yeni Şifre Tekrar *</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="profileManager.savePassword()">Şifreyi Değiştir</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/customer-profile.js"></script>
+}
