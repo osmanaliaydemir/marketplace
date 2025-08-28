@@ -97,6 +97,7 @@ public class CustomerProfileService : ICustomerProfileService
         {
             // OrderService üzerinden sipariş sayısını al
             // TODO: OrderService'e GetOrderCountByUserIdAsync metodu eklenmeli
+            await Task.CompletedTask; // Geçici olarak Task.CompletedTask kullan
             return 0; // Geçici olarak 0 döndür
         }
         catch (Exception ex)
@@ -112,6 +113,7 @@ public class CustomerProfileService : ICustomerProfileService
         {
             // Wishlist tablosu yoksa 0 döndür
             // TODO: Wishlist tablosu oluşturulduğunda bu kısım güncellenecek
+            await Task.CompletedTask; // Geçici olarak Task.CompletedTask kullan
             return 0;
         }
         catch (Exception ex)
@@ -127,6 +129,7 @@ public class CustomerProfileService : ICustomerProfileService
         {
             // UserLoginHistory tablosu yoksa null döndür
             // TODO: UserLoginHistory tablosu oluşturulduğunda bu kısım güncellenecek
+            await Task.CompletedTask; // Geçici olarak Task.CompletedTask kullan
             return null;
         }
         catch (Exception ex)
