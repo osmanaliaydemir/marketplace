@@ -300,16 +300,18 @@ public class CustomerProfileModel
 - [ ] Authorization policies aktif
 
 ### **Sprint 2 - Seller Portal Temel**
-- [ ] `/satici/panel` erişilebilir
-- [ ] Ürün listesi görüntülenir
-- [ ] Ürün ekleme/düzenleme çalışır
-- [ ] Seller-only access korunur
+- [x] `/satici/panel` erişilebilir
+- [x] Ürün listesi görüntülenir
+- [x] Ürün ekleme/düzenleme çalışır
+- [x] Seller-only access korunur
 
 ### **Sprint 3 - Seller Portal Gelişmiş**
-- [ ] Sipariş yönetimi çalışır
-- [ ] Raporlar görüntülenir
-- [ ] API entegrasyonu tamamlanır
-- [ ] Real-time updates çalışır
+- [x] Sipariş yönetimi çalışır (`/satici/siparisler`)
+- [x] Raporlar görüntülenir (`/satici/raporlar`)
+- [x] API entegrasyonu tamamlanır (orders, reports endpoints)
+- [x] Real-time updates çalışır (SignalR)
+- [x] Toplu ürün işlemleri çalışır
+- [x] Bildirim sistemi aktif
 
 ### **Sprint 4 - Customer Portal**
 - [ ] `/hesabim` erişilebilir
@@ -388,7 +390,7 @@ public class CustomerProfileModel
 ---
 
 *Son Güncelleme: 2024-12-28*
-*Proje Durumu: %15 Tamamlandı*
-*Aktif Sprint: Sprint 1 - Authentication & Authorization*
+*Proje Durumu: %45 Tamamlandı*
+*Aktif Sprint: Sprint 3 - Seller Portal Gelişmiş ✅*
 *Tahmini Tamamlanma: 7 Hafta*
 *Toplam Sprint: 7*

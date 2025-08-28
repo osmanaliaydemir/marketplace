@@ -1,9 +1,180 @@
 @page "/satici/siparisler"
 @model Web.Pages.Seller.Orders.IndexModel
 @{
-    ViewData["Title"] = "Siparişler";
+    ViewData["Title"] = "Siparişlerim";
 }
+
 <section class="container py-4">
-    <h1 class="h4 mb-3">Siparişler</h1>
-    <p>Satıcıya ait sipariş listesi burada yer alacak.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Siparişlerim</h1>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary" id="refreshBtn">
+                <i class="bi bi-arrow-clockwise"></i> Yenile
+            </button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="bi bi-funnel"></i> Filtrele
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtreler -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <select class="form-select" id="statusFilter">
+                <option value="">Tüm Durumlar</option>
+                <option value="Pending">Beklemede</option>
+                <option value="Processing">Hazırlanıyor</option>
+                <option value="Shipped">Kargoda</option>
+                <option value="Delivered">Teslim Edildi</option>
+                <option value="Cancelled">İptal Edildi</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="date" class="form-control" id="startDate" placeholder="Başlangıç Tarihi">
+        </div>
+        <div class="col-md-3">
+            <input type="date" class="form-control" id="endDate" placeholder="Bitiş Tarihi">
+        </div>
+        <div class="col-md-3">
+            <input type="text" class="form-control" id="searchInput" placeholder="Sipariş no, müşteri adı...">
+        </div>
+    </div>
+
+    <!-- Sipariş Listesi -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>
+                                <input type="checkbox" class="form-check-input" id="selectAll">
+                            </th>
+                            <th>Sipariş No</th>
+                            <th>Tarih</th>
+                            <th>Müşteri</th>
+                            <th>Tutar</th>
+                            <th>Durum</th>
+                            <th>Ödeme</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <!-- Orders will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sayfalama -->
+    <nav aria-label="Sipariş sayfaları" class="mt-4">
+        <ul class="pagination justify-content-center" id="pagination">
+            <!-- Pagination will be generated here -->
+        </ul>
+    </nav>
+
+    <!-- Toplu İşlemler -->
+    <div class="d-flex justify-content-between align-items-center mt-4" id="bulkActions" style="display: none;">
+        <span id="selectedCount">0 sipariş seçildi</span>
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary" id="bulkStatusBtn">
+                <i class="bi bi-gear"></i> Durum Güncelle
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="bulkExportBtn">
+                <i class="bi bi-download"></i> Dışa Aktar
+            </button>
+        </div>
+    </div>
 </section>
+
+<!-- Filtre Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Gelişmiş Filtreler</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Sipariş Tutarı</label>
+                    <div class="row">
+                        <div class="col-6">
+                            <input type="number" class="form-control" id="minAmount" placeholder="Min">
+                        </div>
+                        <div class="col-6">
+                            <input type="number" class="form-control" id="maxAmount" placeholder="Max">
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Ödeme Yöntemi</label>
+                    <select class="form-select" id="paymentMethodFilter">
+                        <option value="">Tümü</option>
+                        <option value="CreditCard">Kredi Kartı</option>
+                        <option value="BankTransfer">Banka Transferi</option>
+                        <option value="CashOnDelivery">Kapıda Ödeme</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Kargo Firması</label>
+                    <select class="form-select" id="shippingCompanyFilter">
+                        <option value="">Tümü</option>
+                        <option value="Yurtici">Yurtiçi Kargo</option>
+                        <option value="Aras">Aras Kargo</option>
+                        <option value="MNG">MNG Kargo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" id="applyFilters">Filtreleri Uygula</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Durum Güncelleme Modal -->
+<div class="modal fade" id="statusUpdateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sipariş Durumu Güncelle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Yeni Durum</label>
+                    <select class="form-select" id="newStatus">
+                        <option value="Pending">Beklemede</option>
+                        <option value="Processing">Hazırlanıyor</option>
+                        <option value="Shipped">Kargoda</option>
+                        <option value="Delivered">Teslim Edildi</option>
+                        <option value="Cancelled">İptal Edildi</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Not (Opsiyonel)</label>
+                    <textarea class="form-control" id="statusNote" rows="3" placeholder="Durum değişikliği hakkında not..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="sendNotification">
+                        <label class="form-check-label">
+                            Müşteriye bildirim gönder
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" id="updateStatus">Güncelle</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/seller-orders.js"></script>
+}

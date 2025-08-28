@@ -1,9 +1,194 @@
-@page "/satici/raporlar"
+@page "/satici/raporlar/satis"
 @model Web.Pages.Seller.Reports.SalesModel
 @{
     ViewData["Title"] = "Satış Raporları";
 }
+
 <section class="container py-4">
-    <h1 class="h4 mb-3">Satış Raporları</h1>
-    <p>Satış raporları burada gösterilecek.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Satış Raporları</h1>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary" id="refreshBtn">
+                <i class="bi bi-arrow-clockwise"></i> Yenile
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="exportBtn">
+                <i class="bi bi-download"></i> Dışa Aktar
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtreler -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label">Tarih Aralığı</label>
+                    <select class="form-select" id="dateRange">
+                        <option value="7">Son 7 Gün</option>
+                        <option value="30" selected>Son 30 Gün</option>
+                        <option value="90">Son 3 Ay</option>
+                        <option value="365">Son 1 Yıl</option>
+                        <option value="custom">Özel Aralık</option>
+                    </select>
+                </div>
+                <div class="col-md-3" id="customDateInputs" style="display: none;">
+                    <label class="form-label">Başlangıç Tarihi</label>
+                    <input type="date" class="form-control" id="startDate">
+                </div>
+                <div class="col-md-3" id="customDateInputs2" style="display: none;">
+                    <label class="form-label">Bitiş Tarihi</label>
+                    <input type="date" class="form-control" id="endDate">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Kategori</label>
+                    <select class="form-select" id="categoryFilter">
+                        <option value="">Tüm Kategoriler</option>
+                        <!-- Categories will be loaded here -->
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Kartları -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Toplam Satış</h6>
+                            <h3 class="mb-0" id="totalSales">₺0</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-currency-dollar fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Sipariş Sayısı</h6>
+                            <h3 class="mb-0" id="totalOrders">0</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-box fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Ortalama Sipariş</h6>
+                            <h3 class="mb-0" id="avgOrderValue">₺0</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-graph-up fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Müşteri Sayısı</h6>
+                            <h3 class="mb-0" id="uniqueCustomers">0</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-people fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grafikler -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Satış Trendi</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesTrendChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Kategori Dağılımı</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- En Çok Satan Ürünler -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">En Çok Satan Ürünler</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Ürün</th>
+                            <th>Kategori</th>
+                            <th>Satış Adedi</th>
+                            <th>Toplam Tutar</th>
+                            <th>Ortalama Fiyat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topProductsTable">
+                        <!-- Top products will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Müşteri Segmentasyonu -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Müşteri Segmentasyonu</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="customerSegmentChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Günlük Satış Dağılımı</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailySalesChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/js/seller-sales-reports.js"></script>
+}

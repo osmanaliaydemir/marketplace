@@ -1,9 +1,188 @@
-@page "/satici/siparisler/{orderNo}"
+@page "/satici/siparisler/{id}"
 @model Web.Pages.Seller.Orders.DetailsModel
 @{
     ViewData["Title"] = "Sipariş Detayı";
 }
+
 <section class="container py-4">
-    <h1 class="h4 mb-3">Sipariş Detayı</h1>
-    <p>Satıcı sipariş detayları burada yer alacak.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Sipariş #<span id="orderNumber"></span></h1>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary" onclick="window.print()">
+                <i class="bi bi-printer"></i> Yazdır
+            </button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#statusUpdateModal">
+                <i class="bi bi-gear"></i> Durum Güncelle
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sol Kolon - Sipariş Bilgileri -->
+        <div class="col-lg-8">
+            <!-- Sipariş Özeti -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Sipariş Özeti</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Sipariş Tarihi:</strong> <span id="orderDate"></span></p>
+                            <p><strong>Sipariş Durumu:</strong> <span id="orderStatus" class="badge"></span></p>
+                            <p><strong>Ödeme Durumu:</strong> <span id="paymentStatus" class="badge"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Toplam Tutar:</strong> <span id="totalAmount"></span></p>
+                            <p><strong>Kargo Ücreti:</strong> <span id="shippingCost"></span></p>
+                            <p><strong>KDV:</strong> <span id="taxAmount"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ürün Listesi -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Sipariş Edilen Ürünler</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ürün</th>
+                                    <th>Birim Fiyat</th>
+                                    <th>Adet</th>
+                                    <th>Toplam</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderItemsTable">
+                                <!-- Order items will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kargo Bilgileri -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Kargo Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Kargo Firması:</strong> <span id="shippingCompany"></span></p>
+                            <p><strong>Takip Numarası:</strong> <span id="trackingNumber"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Kargo Durumu:</strong> <span id="shippingStatus"></span></p>
+                            <p><strong>Tahmini Teslimat:</strong> <span id="estimatedDelivery"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Kolon - Müşteri ve Teslimat Bilgileri -->
+        <div class="col-lg-4">
+            <!-- Müşteri Bilgileri -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Müşteri Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Ad Soyad:</strong> <span id="customerName"></span></p>
+                    <p><strong>E-posta:</strong> <span id="customerEmail"></span></p>
+                    <p><strong>Telefon:</strong> <span id="customerPhone"></span></p>
+                    <p><strong>Müşteri ID:</strong> <span id="customerId"></span></p>
+                </div>
+            </div>
+
+            <!-- Teslimat Adresi -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Teslimat Adresi</h5>
+                </div>
+                <div class="card-body">
+                    <p id="shippingAddress"></p>
+                </div>
+            </div>
+
+            <!-- Fatura Adresi -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Fatura Adresi</h5>
+                </div>
+                <div class="card-body">
+                    <p id="billingAddress"></p>
+                </div>
+            </div>
+
+            <!-- Sipariş Geçmişi -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Sipariş Geçmişi</h5>
+                </div>
+                <div class="card-body">
+                    <div id="orderHistory">
+                        <!-- Order history will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
+
+<!-- Durum Güncelleme Modal -->
+<div class="modal fade" id="statusUpdateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sipariş Durumu Güncelle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Yeni Durum</label>
+                    <select class="form-select" id="newStatus">
+                        <option value="Pending">Beklemede</option>
+                        <option value="Processing">Hazırlanıyor</option>
+                        <option value="Shipped">Kargoda</option>
+                        <option value="Delivered">Teslim Edildi</option>
+                        <option value="Cancelled">İptal Edildi</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Kargo Takip Numarası (Opsiyonel)</label>
+                    <input type="text" class="form-control" id="trackingNumberInput" placeholder="Kargo takip numarası">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Not (Opsiyonel)</label>
+                    <textarea class="form-control" id="statusNote" rows="3" placeholder="Durum değişikliği hakkında not..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="sendNotification" checked>
+                        <label class="form-check-label">
+                            Müşteriye bildirim gönder
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" id="updateStatus">Güncelle</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Get order ID from route
+        const orderId = @Model.Id;
+    </script>
+    <script src="~/js/seller-order-details.js"></script>
+}

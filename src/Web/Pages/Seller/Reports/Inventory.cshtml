@@ -1,9 +1,229 @@
-@page "/satici/raporlar/envanter"
+@page "/satici/raporlar/stok"
 @model Web.Pages.Seller.Reports.InventoryModel
 @{
-    ViewData["Title"] = "Envanter Raporları";
+    ViewData["Title"] = "Stok Raporları";
 }
+
 <section class="container py-4">
-    <h1 class="h4 mb-3">Envanter Raporları</h1>
-    <p>Envanter raporları burada gösterilecek.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Stok Raporları</h1>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary" id="refreshBtn">
+                <i class="bi bi-arrow-clockwise"></i> Yenile
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="exportBtn">
+                <i class="bi bi-download"></i> Dışa Aktar
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtreler -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label">Kategori</label>
+                    <select class="form-select" id="categoryFilter">
+                        <option value="">Tüm Kategoriler</option>
+                        <!-- Categories will be loaded here -->
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Stok Durumu</label>
+                    <select class="form-select" id="stockStatusFilter">
+                        <option value="">Tümü</option>
+                        <option value="inStock">Stokta</option>
+                        <option value="lowStock">Düşük Stok</option>
+                        <option value="outOfStock">Stok Yok</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Ürün Durumu</label>
+                    <select class="form-select" id="productStatusFilter">
+                        <option value="">Tümü</option>
+                        <option value="active">Aktif</option>
+                        <option value="inactive">Pasif</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Arama</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Ürün adı...">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Kartları -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Toplam Ürün</h6>
+                            <h3 class="mb-0" id="totalProducts">0</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-box fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Stokta Ürün</h6>
+                            <h3 class="mb-0" id="inStockProducts">0</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-check-circle fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Düşük Stok</h6>
+                            <h3 class="mb-0" id="lowStockProducts">0</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-exclamation-triangle fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Stok Yok</h6>
+                            <h3 class="mb-0" id="outOfStockProducts">0</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-x-circle fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grafikler -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Stok Durumu Dağılımı</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="stockStatusChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Kategori Bazında Stok</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryStockChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stok Uyarıları -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Stok Uyarıları
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Ürün</th>
+                            <th>Kategori</th>
+                            <th>Mevcut Stok</th>
+                            <th>Minimum Stok</th>
+                            <th>Durum</th>
+                            <th>Son Güncelleme</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stockAlertsTable">
+                        <!-- Stock alerts will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stok Hareketleri -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Son Stok Hareketleri</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Ürün</th>
+                            <th>İşlem Türü</th>
+                            <th>Miktar</th>
+                            <th>Önceki Stok</th>
+                            <th>Yeni Stok</th>
+                            <th>Not</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stockMovementsTable">
+                        <!-- Stock movements will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stok Maliyeti -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Stok Maliyeti Analizi</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="stockCostChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Stok Değeri Trendi</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="stockValueTrendChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/js/seller-inventory-reports.js"></script>
+}
