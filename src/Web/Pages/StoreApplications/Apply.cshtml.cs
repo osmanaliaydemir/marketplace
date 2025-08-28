@@ -5,7 +5,6 @@ using Web.Services;
 
 namespace Web.Pages.StoreApplications
 {
-    [IgnoreAntiforgeryToken] // TEST: AJAX için anti-forgery doğrulamasını geçici olarak devre dışı bırak
     public class ApplyModel : PageModel
     {
         private readonly ApiClient _apiClient;

@@ -72,6 +72,36 @@ public sealed class AuthController : ControllerBase
         }
     }
 
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] CreateUserRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.FullName))
+            {
+                return BadRequest(new { Message = "Ad soyad, email ve şifre gereklidir" });
+            }
+
+            var emailUnique = await _userService.IsEmailUniqueAsync(request.Email);
+            if (!emailUnique)
+            {
+                return Conflict(new { Message = "Bu e-posta ile kayıtlı bir kullanıcı zaten var" });
+            }
+
+            // Güvenlik: web kayıtları her zaman Customer rolünde oluşturulsun
+            request.Role = "Customer";
+
+            var user = await _userService.CreateAsync(request);
+
+            // Opsiyonel: Doğrudan login yanıtı dönmek yerine basit bir başarı yanıtı veriyoruz
+            return Ok(new { Success = true, User = user, Message = "Kayıt başarılı" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { Message = "Kayıt sırasında bir hata oluştu", Error = ex.Message });
+        }
+    }
+
     [HttpPost("refresh")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
     {

@@ -1,0 +1,43 @@
+@page "/uye-ol"
+@model Web.Pages.CustomerRegisterModel
+@{
+    ViewData["Title"] = "Üye Ol";
+}
+
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <h1 class="h3 mb-4">Üye Ol</h1>
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger">@Model.ErrorMessage</div>
+            }
+
+            <form method="post">
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <label class="form-label">Ad Soyad</label>
+                    <input asp-for="Input.FullName" class="form-control" />
+                    <span class="text-danger" asp-validation-for="Input.FullName"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">E-posta</label>
+                    <input asp-for="Input.Email" type="email" class="form-control" />
+                    <span class="text-danger" asp-validation-for="Input.Email"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Şifre</label>
+                    <input asp-for="Input.Password" type="password" class="form-control" />
+                    <span class="text-danger" asp-validation-for="Input.Password"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Şifre (Tekrar)</label>
+                    <input asp-for="Input.ConfirmPassword" type="password" class="form-control" />
+                    <span class="text-danger" asp-validation-for="Input.ConfirmPassword"></span>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Üye Ol</button>
+            </form>
+        </div>
+    </div>
+</section>

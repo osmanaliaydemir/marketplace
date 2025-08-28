@@ -1,0 +1,33 @@
+@page "/giris"
+@model Web.Pages.LoginModel
+@{
+    ViewData["Title"] = "Giriş Yap";
+}
+
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <h1 class="h3 mb-4">Giriş Yap</h1>
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger">@Model.ErrorMessage</div>
+            }
+
+            <form method="post">
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <label class="form-label">E-posta veya Kullanıcı Adı</label>
+                    <input asp-for="Input.EmailOrUsername" class="form-control" />
+                    <span class="text-danger" asp-validation-for="Input.EmailOrUsername"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Şifre</label>
+                    <input asp-for="Input.Password" type="password" class="form-control" />
+                    <span class="text-danger" asp-validation-for="Input.Password"></span>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Giriş Yap</button>
+            </form>
+        </div>
+    </div>
+</section>

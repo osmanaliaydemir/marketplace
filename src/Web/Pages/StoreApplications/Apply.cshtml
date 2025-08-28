@@ -58,6 +58,7 @@
 
                 <!-- Application Form -->
                 <form id="storeApplicationForm" class="needs-validation" method="post" novalidate>
+                    @Html.AntiForgeryToken()
                     <!-- Step 1: Business Information -->
                     <div class="form-step active" id="form-step-1">
                         <div class="card shadow-sm border-0">

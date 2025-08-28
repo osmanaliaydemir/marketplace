@@ -99,13 +99,13 @@ public sealed class AppUserService : IAppUserService
                 throw new InvalidOperationException($"Username {request.FullName} already exists");
 
             // Entity oluştur
-            var user = new AppUser
-            {
+            var user = new AppUser {
                 Email = request.Email,
                 FullName = request.FullName,
                 PasswordHash = HashPassword(request.Password),
                 Role = Enum.Parse<UserRole>(request.Role),
-                IsActive = true
+                IsActive = true,
+                IsDeleted = false,
             };
 
             var createdUser = await _userRepository.AddAsync(user);

@@ -346,12 +346,16 @@ async function submitForm(formData, submitBtn, originalText) {
         xhr.withCredentials = true; // same-origin cookie'leri gönder
         
         // Anti-forgery token'ı header olarak ekle
-        try {
-            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-            if (tokenInput && tokenInput.value) {
-                xhr.setRequestHeader('RequestVerificationToken', tokenInput.value);
-            }
-        } catch {}
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        if (tokenInput && tokenInput.value) {
+            xhr.setRequestHeader('RequestVerificationToken', tokenInput.value);
+        } else {
+            console.error('Anti-forgery token bulunamadı!');
+            showToast('Güvenlik token\'ı bulunamadı. Sayfayı yenileyin.', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
         
         xhr.onreadystatechange = async function() {
             if (xhr.readyState === XMLHttpRequest.DONE) {

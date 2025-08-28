@@ -1,0 +1,9 @@
+@page "/cikis"
+@model Web.Pages.LogoutModel
+@{
+    ViewData["Title"] = "Çıkış";
+}
+<form method="post">
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-outline-danger">Çıkış Yap</button>
+</form>
