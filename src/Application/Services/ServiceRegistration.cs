@@ -18,6 +18,7 @@ public static class ServiceRegistration
 		services.AddScoped<IInventoryService, InventoryService>();
 		services.AddScoped<IExceptionLogService, ExceptionLogService>();
 		services.AddScoped<IStoreApplicationService, StoreApplicationService>();
+		services.AddScoped<IStoreService, StoreService>();
 
 		// Business Rule Validators
 		services.AddScoped<BusinessRuleValidator>();

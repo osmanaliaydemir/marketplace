@@ -317,6 +317,13 @@ public sealed class AppUserService : IAppUserService
         }
     }
 
+    public async Task<UserDto?> GetCurrentUserAsync()
+    {
+        // TODO: Bu metod HttpContext'ten current user'ı alacak
+        // Şimdilik NotImplementedException fırlatıyor
+        throw new NotImplementedException("GetCurrentUserAsync requires HttpContext integration");
+    }
+
     private static UserDto MapToDto(AppUser user)
     {
         return new UserDto

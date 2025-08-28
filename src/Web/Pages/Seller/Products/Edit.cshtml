@@ -5,5 +5,45 @@
 }
 <section class="container py-4">
     <h1 class="h4 mb-3">Ürün Düzenle</h1>
-    <p>Ürün düzenleme formu.</p>
+    <form method="post">
+        @Html.AntiForgeryToken()
+        <div class="mb-3">
+            <label class="form-label">Ürün Adı</label>
+            <input asp-for="Input.Name" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Açıklama</label>
+            <textarea asp-for="Input.Description" class="form-control" rows="4"></textarea>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Kategori ID</label>
+                <input asp-for="Input.CategoryId" type="number" class="form-control" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Fiyat</label>
+                <input asp-for="Input.Price" type="number" step="0.01" class="form-control" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Stok</label>
+                <input asp-for="Input.StockQty" type="number" class="form-control" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Para Birimi</label>
+                <input asp-for="Input.Currency" class="form-control" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Yayınla</label>
+                <input asp-for="Input.IsPublished" class="form-check-input ms-2" type="checkbox" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Aktif</label>
+                <input asp-for="Input.IsActive" class="form-check-input ms-2" type="checkbox" />
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a href="/satici/urunler" class="btn btn-secondary ms-2">İptal</a>
+    </form>
 </section>

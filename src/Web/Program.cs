@@ -7,6 +7,9 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizeFolder("/Satici", "SellerOnly");
     options.Conventions.AuthorizeFolder("/Hesabim", "CustomerOnly");
 });
+
+// Add HttpContextAccessor for ApiClient
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<Web.Services.ApiClient>();
 
 // Add Anti-Forgery services

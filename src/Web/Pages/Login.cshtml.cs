@@ -48,6 +48,15 @@ public sealed class LoginModel : PageModel
                 return Page();
             }
 
+            // API token'ı cookie'de sakla (HttpOnly)
+            Response.Cookies.Append("API_TOKEN", res.Token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = HttpContext.Request.IsHttps,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddHours(24)
+            });
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, res.User.Id.ToString()),

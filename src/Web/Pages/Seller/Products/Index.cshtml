@@ -5,5 +5,51 @@
 }
 <section class="container py-4">
     <h1 class="h4 mb-3">Ürünlerim</h1>
-    <p>Satıcıya ait ürün listesi burada yer alacak.</p>
+
+    @if (Model.Products.Count == 0)
+    {
+        <div class="alert alert-info">Henüz ürün yok.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Ürün</th>
+                        <th>Fiyat</th>
+                        <th>Stok</th>
+                        <th>Durum</th>
+                        <th>Oluşturma</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var p in Model.Products)
+                {
+                    <tr>
+                        <td>@p.Id</td>
+                        <td>
+                            <div class="fw-semibold">@p.Name</div>
+                            <div class="text-muted small">@p.CategoryName · @p.StoreName</div>
+                        </td>
+                        <td>@p.Price @p.Currency</td>
+                        <td>@p.StockQty</td>
+                        <td>
+                            @if (p.IsActive)
+                            {
+                                <span class="badge text-bg-success">Aktif</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-secondary">Pasif</span>
+                            }
+                        </td>
+                        <td>@p.CreatedAt.ToLocalTime().ToString("g")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
 </section>

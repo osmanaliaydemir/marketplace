@@ -1,7 +1,7 @@
 using Api.DTOs.Stores;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Infrastructure.Persistence.Repositories;
+using Application.Abstractions;
 
 namespace Api.Controllers;
 
@@ -10,11 +10,40 @@ namespace Api.Controllers;
 [Authorize(Roles = "Admin")]
 public sealed class StoresController : ControllerBase
 {
-    private readonly IStoreUnitOfWork _unitOfWork;
+    private readonly IStoreService _storeService;
+    private readonly ILogger<StoresController> _logger;
 
-    public StoresController(IStoreUnitOfWork unitOfWork)
+    public StoresController(IStoreService storeService, ILogger<StoresController> logger)
     {
-        _unitOfWork = unitOfWork;
+        _storeService = storeService;
+        _logger = logger;
+    }
+
+    [HttpGet("mine")]
+    [Authorize(Roles = "Seller,Admin")]
+    public async Task<ActionResult<StoreDetailDto>> GetMine()
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !long.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { Message = "Kullanıcı kimliği doğrulanamadı" });
+            }
+
+            var store = await _storeService.GetByCurrentSellerAsync(userId);
+            if (store == null)
+            {
+                return NotFound(new { Message = "Mağaza bulunamadı" });
+            }
+
+            return Ok(store);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting current seller's store");
+            return StatusCode(500, new { Message = "Mağaza bilgileri alınırken bir hata oluştu" });
+        }
     }
 
     [HttpGet]
@@ -22,32 +51,30 @@ public sealed class StoresController : ControllerBase
     {
         try
         {
-            var stores = await _unitOfWork.Stores.GetAllAsync();
-            var sellers = await _unitOfWork.Sellers.GetAllAsync();
-            var users = await _unitOfWork.Users.GetAllAsync();
-
-            var dtos = stores.Select(store =>
+            var request = new Application.DTOs.Stores.StoreListRequest
             {
-                var seller = sellers.FirstOrDefault(s => s.Id == store.SellerId);
-                var user = users.FirstOrDefault(u => u.Id == seller?.UserId);
-                
-                return new StoreListDto
-                {
-                    Id = store.Id,
-                    Name = store.Name,
-                    Slug = store.Slug,
-                    LogoUrl = store.LogoUrl,
-                    IsActive = store.IsActive,
-                    SellerName = user?.FullName ?? "Bilinmeyen Satıcı",
-                    ProductCount = 0, // TODO: Product count hesaplanacak
-                    CreatedAt = store.CreatedAt
-                };
+                Page = 1,
+                PageSize = 1000
+            };
+
+            var result = await _storeService.ListAsync(request);
+            var dtos = result.Items.Select(store => new StoreListDto
+            {
+                Id = store.Id,
+                Name = store.Name,
+                Slug = store.Slug,
+                LogoUrl = store.LogoUrl,
+                IsActive = store.IsActive,
+                SellerName = store.Seller?.FullName ?? "Bilinmeyen Satıcı",
+                ProductCount = 0, // TODO: Product count hesaplanacak
+                CreatedAt = store.CreatedAt
             });
 
             return Ok(dtos);
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error getting all stores");
             return StatusCode(500, new { Message = "Mağazalar listelenirken bir hata oluştu", Error = ex.Message });
         }
     }
@@ -57,38 +84,15 @@ public sealed class StoresController : ControllerBase
     {
         try
         {
-            var store = await _unitOfWork.Stores.GetByIdAsync(id);
+            var store = await _storeService.GetByIdAsync(id);
             if (store == null)
                 return NotFound(new { Message = "Mağaza bulunamadı" });
 
-            var seller = await _unitOfWork.Sellers.GetByIdAsync(store.SellerId);
-            var user = seller != null ? await _unitOfWork.Users.GetByIdAsync(seller.UserId) : null;
-
-            var dto = new StoreDetailDto
-            {
-                Id = store.Id,
-                SellerId = store.SellerId,
-                Name = store.Name,
-                Slug = store.Slug,
-                LogoUrl = store.LogoUrl,
-                IsActive = store.IsActive,
-                CreatedAt = store.CreatedAt,
-                ModifiedAt = store.ModifiedAt,
-                Seller = new SellerInfoDto
-                {
-                    Id = seller?.Id ?? 0,
-                    FullName = user?.FullName ?? "Bilinmeyen Satıcı",
-                    Email = user?.Email ?? "",
-                    CommissionRate = seller?.CommissionRate ?? 0,
-                    IsActive = seller?.IsActive ?? false
-                },
-                Categories = new List<Api.DTOs.Categories.StoreCategoryListDto>() // TODO: Store categories eklenecek
-            };
-
-            return Ok(dto);
+            return Ok(store);
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error getting store by ID: {StoreId}", id);
             return StatusCode(500, new { Message = "Mağaza bilgileri alınırken bir hata oluştu", Error = ex.Message });
         }
     }
@@ -102,78 +106,41 @@ public sealed class StoresController : ControllerBase
             if (request.Page < 1) request.Page = 1;
             if (request.PageSize < 1 || request.PageSize > 100) request.PageSize = 20;
 
-            var stores = await _unitOfWork.Stores.GetAllAsync();
-            var sellers = await _unitOfWork.Sellers.GetAllAsync();
-            var users = await _unitOfWork.Users.GetAllAsync();
-
-            // Filtering
-            var filteredStores = stores.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            var searchRequest = new Application.DTOs.Stores.StoreSearchRequest
             {
-                filteredStores = filteredStores.Where(s => 
-                    s.Name.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    s.Slug.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase));
-            }
-
-            if (request.IsActive.HasValue)
-            {
-                filteredStores = filteredStores.Where(s => s.IsActive == request.IsActive.Value);
-            }
-
-            if (request.SellerId.HasValue)
-            {
-                filteredStores = filteredStores.Where(s => s.SellerId == request.SellerId.Value);
-            }
-
-            // Sorting
-            filteredStores = request.SortBy?.ToLower() switch
-            {
-                "name" => request.SortDescending ? filteredStores.OrderByDescending(s => s.Name) : filteredStores.OrderBy(s => s.Name),
-                "createdat" => request.SortDescending ? filteredStores.OrderByDescending(s => s.CreatedAt) : filteredStores.OrderBy(s => s.CreatedAt),
-                "seller" => request.SortDescending ? filteredStores.OrderByDescending(s => s.SellerId) : filteredStores.OrderBy(s => s.SellerId),
-                _ => request.SortDescending ? filteredStores.OrderByDescending(s => s.CreatedAt) : filteredStores.OrderBy(s => s.CreatedAt)
+                SearchTerm = request.SearchTerm,
+                IsActive = request.IsActive,
+                SellerId = request.SellerId,
+                Page = request.Page,
+                PageSize = request.PageSize
             };
 
-            // Paging
-            var totalCount = filteredStores.Count();
-            var pagedStores = filteredStores
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToList();
+            var result = await _storeService.SearchAsync(searchRequest);
 
-            // Convert to DTOs
-            var dtos = pagedStores.Select(store =>
+            var response = new StoreSearchResponse
             {
-                var seller = sellers.FirstOrDefault(s => s.Id == store.SellerId);
-                var user = users.FirstOrDefault(u => u.Id == seller?.UserId);
-                
-                return new StoreListDto
+                Items = result.Items.Select(store => new StoreListDto
                 {
                     Id = store.Id,
                     Name = store.Name,
                     Slug = store.Slug,
                     LogoUrl = store.LogoUrl,
                     IsActive = store.IsActive,
-                    SellerName = user?.FullName ?? "Bilinmeyen Satıcı",
+                    SellerName = store.Seller?.FullName ?? "Bilinmeyen Satıcı",
                     ProductCount = 0, // TODO: Product count hesaplanacak
                     CreatedAt = store.CreatedAt
-                };
-            });
-
-            var response = new StoreSearchResponse
-            {
-                Items = dtos,
-                TotalCount = totalCount,
-                Page = request.Page,
-                PageSize = request.PageSize,
-                TotalPages = (int)Math.Ceiling((double)totalCount / request.PageSize)
+                }),
+                TotalCount = result.TotalCount,
+                Page = result.Page,
+                PageSize = result.PageSize,
+                TotalPages = (int)Math.Ceiling((double)result.TotalCount / result.PageSize)
             };
 
             return Ok(response);
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error searching stores");
             return StatusCode(500, new { Message = "Mağaza araması yapılırken bir hata oluştu", Error = ex.Message });
         }
     }
@@ -183,25 +150,25 @@ public sealed class StoresController : ControllerBase
     {
         try
         {
-            var stores = await _unitOfWork.Stores.GetAllAsync();
-            var sellers = await _unitOfWork.Sellers.GetAllAsync();
+            var stats = await _storeService.GetStatsAsync();
 
-            var stats = new StoreStatsDto
+            var response = new StoreStatsDto
             {
-                TotalStores = stores.Count(),
-                ActiveStores = stores.Count(s => s.IsActive),
-                InactiveStores = stores.Count(s => !s.IsActive),
-                TotalSellers = sellers.Count(),
-                ActiveSellers = sellers.Count(s => s.IsActive),
-                AverageProductsPerStore = 0, // TODO: Product count hesaplanacak
-                NewStoresThisMonth = stores.Count(s => s.CreatedAt >= DateTime.UtcNow.AddMonths(-1)),
-                NewStoresThisWeek = stores.Count(s => s.CreatedAt >= DateTime.UtcNow.AddDays(-7))
+                TotalStores = stats.TotalStores,
+                ActiveStores = stats.ActiveStores,
+                InactiveStores = stats.InactiveStores,
+                TotalSellers = stats.TotalSellers,
+                ActiveSellers = stats.ActiveSellers,
+                AverageProductsPerStore = stats.AverageProductsPerStore,
+                NewStoresThisMonth = stats.NewStoresThisMonth,
+                NewStoresThisWeek = stats.NewStoresThisWeek
             };
 
-            return Ok(stats);
+            return Ok(response);
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error getting store stats");
             return StatusCode(500, new { Message = "Mağaza istatistikleri alınırken bir hata oluştu", Error = ex.Message });
         }
     }
@@ -211,20 +178,17 @@ public sealed class StoresController : ControllerBase
     {
         try
         {
-            var store = await _unitOfWork.Stores.GetByIdAsync(id);
-            if (store == null)
-                return NotFound(new { Message = "Mağaza bulunamadı" });
-
-            store.IsActive = request.IsActive;
-            store.ModifiedAt = DateTime.UtcNow;
-
-            await _unitOfWork.Stores.UpdateAsync(store);
-            await _unitOfWork.SaveChangesAsync();
+            var success = await _storeService.SetActiveAsync(id, request.IsActive);
+            if (!success)
+            {
+                return BadRequest(new { Message = "Mağaza durumu güncellenemedi" });
+            }
 
             return Ok(new { Message = "Mağaza durumu güncellendi" });
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error updating store status ID: {StoreId}", id);
             return StatusCode(500, new { Message = "Mağaza durumu güncellenirken bir hata oluştu", Error = ex.Message });
         }
     }
@@ -234,17 +198,17 @@ public sealed class StoresController : ControllerBase
     {
         try
         {
-            var store = await _unitOfWork.Stores.GetByIdAsync(id);
-            if (store == null)
-                return NotFound(new { Message = "Mağaza bulunamadı" });
-
-            await _unitOfWork.Stores.DeleteAsync(id);
-            await _unitOfWork.SaveChangesAsync();
+            var success = await _storeService.DeleteAsync(id);
+            if (!success)
+            {
+                return BadRequest(new { Message = "Mağaza silinemedi" });
+            }
 
             return Ok(new { Message = "Mağaza silindi" });
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error deleting store ID: {StoreId}", id);
             return StatusCode(500, new { Message = "Mağaza silinirken bir hata oluştu", Error = ex.Message });
         }
     }
