@@ -67,7 +67,7 @@ public class EditModel : PageModel
 			Input.MetaTitle = Product.MetaTitle;
 			Input.MetaDescription = Product.MetaDescription;
 			Input.MetaKeywords = Product.MetaKeywords;
-			Input.Weight = Product.Weight;
+			Input.Weight = Product.Weight ?? 0;
 		}
 		catch (Exception ex)
 		{

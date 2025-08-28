@@ -32,7 +32,6 @@ public sealed class ProfileModel : PageModel
     {
     }
 
-    [HttpPost]
     public async Task<IActionResult> OnPostGetProfileAsync()
     {
         try
@@ -53,7 +52,6 @@ public sealed class ProfileModel : PageModel
         }
     }
 
-    [HttpPost]
     public async Task<IActionResult> OnPostGetAddressesAsync()
     {
         try
@@ -74,7 +72,6 @@ public sealed class ProfileModel : PageModel
         }
     }
 
-    [HttpPost]
     public async Task<IActionResult> OnPostUpdateProfileAsync([FromBody] UpdateCustomerProfileRequest request)
     {
         try
@@ -95,7 +92,6 @@ public sealed class ProfileModel : PageModel
         }
     }
 
-    [HttpPost]
     public async Task<IActionResult> OnPostSaveAddressAsync([FromBody] CreateCustomerAddressRequest request)
     {
         try
@@ -116,7 +112,6 @@ public sealed class ProfileModel : PageModel
         }
     }
 
-    [HttpPost]
     public async Task<IActionResult> OnPostUpdateAddressAsync([FromBody] UpdateCustomerAddressRequest request)
     {
         try
@@ -137,7 +132,6 @@ public sealed class ProfileModel : PageModel
         }
     }
 
-    [HttpPost]
     public async Task<IActionResult> OnPostDeleteAddressAsync(int id)
     {
         try
@@ -165,7 +159,6 @@ public sealed class ProfileModel : PageModel
         }
     }
 
-    [HttpPost]
     public async Task<IActionResult> OnPostChangePasswordAsync([FromBody] Application.DTOs.Customers.ChangePasswordRequest request)
     {
         try

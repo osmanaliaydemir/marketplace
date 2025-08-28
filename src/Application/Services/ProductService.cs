@@ -803,11 +803,11 @@ public sealed class ProductService : IProductService
             IsFeatured = product.IsFeatured,
             DisplayOrder = product.DisplayOrder,
             CategoryId = product.CategoryId,
-            CategoryName = category?.Name ?? "Unknown",
+            CategoryName = category?.Name ?? string.Empty,
             StoreId = product.StoreId,
-            StoreName = store?.Name ?? "Unknown",
+            StoreName = store?.Name ?? string.Empty,
             SellerId = product.SellerId,
-            SellerName = seller?.User?.FullName ?? "Unknown",
+            SellerName = seller?.User?.FullName ?? string.Empty,
             MetaTitle = product.MetaTitle,
             MetaDescription = product.MetaDescription,
             MetaKeywords = product.MetaKeywords,
@@ -841,9 +841,9 @@ public sealed class ProductService : IProductService
                 CreatedAt = product.CreatedAt,
                 ModifiedAt = product.ModifiedAt,
                 CategoryId = product.CategoryId,
-                CategoryName = category?.Name ?? "Unknown",
+                CategoryName = category?.Name ?? string.Empty,
                 StoreId = product.StoreId,
-                StoreName = store?.Name ?? "Unknown"
+                StoreName = store?.Name ?? string.Empty
             });
         }
         

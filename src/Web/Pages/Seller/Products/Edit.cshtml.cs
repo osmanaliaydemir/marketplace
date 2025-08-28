@@ -45,7 +45,7 @@ public sealed class EditModel : PageModel
             IsActive = Product.IsActive,
             IsFeatured = Product.IsFeatured,
             IsPublished = Product.IsPublished,
-            Weight = Product.Weight,
+            Weight = Product.Weight ?? 0,
             MinOrderQty = Product.MinOrderQty,
             MaxOrderQty = Product.MaxOrderQty,
             MetaTitle = Product.MetaTitle,

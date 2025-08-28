@@ -27,9 +27,14 @@ builder.Services.AddApplicationValidation();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new() { Title = "Marketplace API", Version = "v1" });
+    c.SwaggerDoc("v1", new()
+    { 
+        Title = "Marketplace API", 
+        Version = "v1",
+        Description = "E-ticaret marketplace API'si - Ürün yönetimi, sipariş işlemleri, ödeme entegrasyonu ve kullanıcı yönetimi"
+    });
     
-    // XML documentation dosyasını ekle
+    // XML documentation dosyalarını ekle
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     if (File.Exists(xmlPath))
@@ -37,17 +42,27 @@ builder.Services.AddSwaggerGen(c =>
         c.IncludeXmlComments(xmlPath);
     }
     
+    // Application layer XML documentation
+    var applicationXmlFile = Path.Combine(AppContext.BaseDirectory, "Application.xml");
+    if (File.Exists(applicationXmlFile))
+    {
+        c.IncludeXmlComments(applicationXmlFile);
+    }
+    
+    // Security definitions
     c.AddSecurityDefinition("Bearer", new()
     {
         Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
         Scheme = "bearer",
-        BearerFormat = "JWT"
+        BearerFormat = "JWT",
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
     });
+    
     c.AddSecurityRequirement(new()
     {
         {
             new() { Reference = new() { Id = "Bearer", Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme } },
-            Array.Empty<string>()
+            new[] { "auth" }
         }
     });
 });
@@ -70,6 +85,8 @@ if (app.Environment.IsDevelopment())
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Marketplace API v1");
         c.RoutePrefix = string.Empty; // Root'ta Swagger UI'ı göster
+        c.DocumentTitle = "Marketplace API Documentation";
+        c.DefaultModelsExpandDepth(-1); // Models'i gizle
     });
 }
 

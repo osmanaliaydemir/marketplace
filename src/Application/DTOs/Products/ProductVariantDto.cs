@@ -1,22 +1,102 @@
 namespace Application.DTOs.Products;
 
-public sealed record ProductVariantDto
+/// <summary>
+/// Ürün varyantı DTO'su
+/// </summary>
+public class ProductVariantDto
 {
-    public long Id { get; init; }
-    public long ProductId { get; init; }
-    public string? Sku { get; init; }
-    public string? Barcode { get; init; }
-    public string? VariantName { get; init; }
-    public decimal Price { get; init; }
-    public decimal? CompareAtPrice { get; init; }
-    public int StockQty { get; init; }
-    public int ReservedQty { get; init; }
-    public int? MinOrderQty { get; init; }
-    public int? MaxOrderQty { get; init; }
-    public int DisplayOrder { get; init; }
-    public bool IsDefault { get; init; }
-    public decimal Weight { get; init; }
-    public bool IsActive { get; init; }
-    public DateTime CreatedAt { get; init; }
-    public DateTime? ModifiedAt { get; init; }
+    /// <summary>
+    /// Varyant ID'si
+    /// </summary>
+    public long Id { get; set; }
+
+    /// <summary>
+    /// Ürün ID'si
+    /// </summary>
+    public long ProductId { get; set; }
+
+    /// <summary>
+    /// Varyant adı
+    /// </summary>
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Varyant adı (alias)
+    /// </summary>
+    public string VariantName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Varyant SKU'su
+    /// </summary>
+    public string? Sku { get; set; }
+
+    /// <summary>
+    /// Barkod
+    /// </summary>
+    public string? Barcode { get; set; }
+
+    /// <summary>
+    /// Varyant fiyatı
+    /// </summary>
+    public decimal Price { get; set; }
+
+    /// <summary>
+    /// Varyant eski fiyatı
+    /// </summary>
+    public decimal? CompareAtPrice { get; set; }
+
+    /// <summary>
+    /// Varyant stok miktarı
+    /// </summary>
+    public int StockQty { get; set; }
+
+    /// <summary>
+    /// Rezerve edilmiş stok miktarı
+    /// </summary>
+    public int ReservedQty { get; set; }
+
+    /// <summary>
+    /// Minimum sipariş miktarı
+    /// </summary>
+    public int? MinOrderQty { get; set; }
+
+    /// <summary>
+    /// Maksimum sipariş miktarı
+    /// </summary>
+    public int? MaxOrderQty { get; set; }
+
+    /// <summary>
+    /// Görüntülenme sırası
+    /// </summary>
+    public int DisplayOrder { get; set; }
+
+    /// <summary>
+    /// Varsayılan varyant mı?
+    /// </summary>
+    public bool IsDefault { get; set; }
+
+    /// <summary>
+    /// Varyant ağırlığı
+    /// </summary>
+    public decimal Weight { get; set; }
+
+    /// <summary>
+    /// Varyant aktif mi?
+    /// </summary>
+    public bool IsActive { get; set; }
+
+    /// <summary>
+    /// Varyant seçenekleri
+    /// </summary>
+    public Dictionary<string, string> Options { get; set; } = new();
+
+    /// <summary>
+    /// Oluşturulma tarihi
+    /// </summary>
+    public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// Güncellenme tarihi
+    /// </summary>
+    public DateTime? ModifiedAt { get; set; }
 }
