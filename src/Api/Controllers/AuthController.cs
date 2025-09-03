@@ -170,6 +170,20 @@ public sealed class AuthController : ControllerBase
         }
     }
 
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        try
+        {
+            // TODO: Refresh token'ı invalid hale getir
+            return Ok(new { Success = true, Message = "Çıkış yapıldı" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { Message = "Çıkış yapılırken bir hata oluştu", Error = ex.Message });
+        }
+    }
+
     // Development için geçici endpoint (production'da kaldırılacak)
     [HttpPost("dev-login")]
     public IActionResult DevLogin([FromBody] DevLoginRequest request)
