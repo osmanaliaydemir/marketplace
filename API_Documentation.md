@@ -144,6 +144,12 @@ curl -X POST "https://api.marketplace.com/api/orders" \
   }'
 ```
 
+### Kullanıcı Çıkış Yapma
+```bash
+curl -X POST "https://api.marketplace.com/api/auth/logout" \
+  -H "Authorization: Bearer <your-jwt-token>"
+```
+
 ## 🔧 Rate Limiting
 
 API rate limiting uygular:
