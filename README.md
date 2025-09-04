@@ -1,34 +1,34 @@
-# 🏪 Marketplace - Multi-Vendor E-Ticaret Platformu
+# Marketplace - Multi-Vendor E-Ticaret Platformu
 
 Türkiye odaklı, çok satıcılı e-ticaret platformu. .NET 9, SQL Server ve modern web teknolojileri ile geliştirilmiştir.
 
-## 🚀 Özellikler
+## Özellikler
 
-### 🔐 Kimlik Doğrulama & Yetkilendirme
+### Kimlik Doğrulama & Yetkilendirme
 - JWT tabanlı authentication
 - Role-based authorization (Admin, Seller, Customer)
 - Session management
 - Secure password hashing
 
-### 🏪 Mağaza Yönetimi
+### Mağaza Yönetimi
 - Mağaza başvuru sistemi
 - Admin onay süreci
 - Mağaza profil yönetimi
 - Kategori ve ürün yönetimi
 
-### 💳 Ödeme Sistemi
+### Ödeme Sistemi
 - PayTR Marketplace entegrasyonu
 - Otomatik komisyon dağıtımı
 - Çoklu satıcı ödeme işlemi
 - Refund ve iptal yönetimi
 
-### 📊 Dashboard
+### Dashboard
 - Admin dashboard
 - Satış istatistikleri
 - Mağaza başvuru yönetimi
 - Kullanıcı yönetimi
 
-## 🛠️ Teknolojiler
+##  Teknolojiler
 
 ### Backend
 - **.NET 9** - Web API
@@ -49,7 +49,7 @@ Türkiye odaklı, çok satıcılı e-ticaret platformu. .NET 9, SQL Server ve mo
 - **Unit of Work Pattern**
 - **CQRS Pattern**
 
-## 📁 Proje Yapısı
+## Proje Yapısı
 
 ```
 src/
@@ -64,7 +64,7 @@ src/
 tests/                      # Unit ve integration testler
 ```
 
-## 🚀 Kurulum
+## Kurulum
 
 ### Gereksinimler
 - .NET 9 SDK
@@ -106,7 +106,7 @@ cd src/Dashboard
 dotnet run
 ```
 
-## 🔑 Test Kullanıcıları
+## Test Kullanıcıları
 
 | Email | Şifre | Rol |
 |-------|-------|-----|
@@ -114,7 +114,7 @@ dotnet run
 | seller@marketplace.local | admin123 | Seller |
 | customer@marketplace.local | admin123 | Customer |
 
-## 📚 API Dokümantasyonu
+## API Dokümantasyonu
 
 - **Swagger UI**: `https://localhost:7001/swagger`
 - **Health Check**: `https://localhost:7001/health`
@@ -129,7 +129,7 @@ dotnet test
 dotnet test tests/Infrastructure.Tests/
 ```
 
-## 📝 Katkıda Bulunma
+## Katkıda Bulunma
 
 1. Fork yap
 2. Feature branch oluştur (`git checkout -b feature/amazing-feature`)
@@ -137,21 +137,17 @@ dotnet test tests/Infrastructure.Tests/
 4. Push yap (`git push origin feature/amazing-feature`)
 5. Pull Request oluştur
 
-## 📄 Lisans
+## Lisans
 
 Bu proje MIT lisansı altında lisanslanmıştır.
 
-## 👨‍💻 Geliştirici
+## Geliştirici
 
 **Osman Ali Aydemir**
 - .NET Developer & Software Architect
 - Fullstack Developer (Backend, Frontend, Database)
 - [GitHub](https://github.com/osmanaliaydemir)
 
-## 🆘 Destek
+## Destek
 
 Sorunlar için [GitHub Issues](https://github.com/osmanaliaydemir/marketplace/issues) kullanın.
-
----
-
-⭐ Bu projeyi beğendiyseniz yıldız vermeyi unutmayın!
