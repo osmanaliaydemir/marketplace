@@ -19,7 +19,14 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 // Add HttpContextAccessor for ApiClient
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddHttpClient<Web.Services.ApiClient>();
+builder.Services.AddHttpClient<Web.Services.ApiClient>(client =>
+{
+    var apiBaseUrl = builder.Configuration["ApiBaseUrl"];
+    if (!string.IsNullOrEmpty(apiBaseUrl))
+    {
+        client.BaseAddress = new Uri(apiBaseUrl);
+    }
+});
 
 // Add Anti-Forgery services
 builder.Services.AddAntiforgery(options =>

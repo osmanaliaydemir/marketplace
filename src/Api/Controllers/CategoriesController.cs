@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Infrastructure.Persistence.Repositories;
-using Domain.Entities;
+using Application.Abstractions;
 using Application.DTOs.Categories;
-using System.Text.RegularExpressions;
 
 namespace Api.Controllers;
 
@@ -16,96 +14,66 @@ namespace Api.Controllers;
 [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 public sealed class CategoriesController : ControllerBase
 {
-	private readonly IStoreUnitOfWork _unitOfWork;
+	private readonly ICategoryService _categoryService;
 	private readonly ILogger<CategoriesController> _logger;
 
-	public CategoriesController(IStoreUnitOfWork unitOfWork, ILogger<CategoriesController> logger)
+	public CategoriesController(ICategoryService categoryService, ILogger<CategoriesController> logger)
 	{
-		_unitOfWork = unitOfWork;
+		_categoryService = categoryService;
 		_logger = logger;
 	}
 
 	/// <summary>
-	/// Kategorileri listele ve filtrele
+	/// Basit kategori listesi (dropdown için)
+	/// </summary>
+	/// <returns>Aktif kategorilerin basit listesi</returns>
+	/// <response code="200">Kategoriler başarıyla alındı</response>
+	/// <response code="500">Sunucu hatası</response>
+	[HttpGet]
+	[AllowAnonymous]
+	[ProducesResponseType(typeof(IEnumerable<CategoryOptionDto>), StatusCodes.Status200OK)]
+	public async Task<ActionResult<IEnumerable<CategoryOptionDto>>> GetAll()
+	{
+		try
+		{
+			var categories = await _categoryService.GetCategoryOptionsAsync();
+			return Ok(categories);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error getting category options");
+			return StatusCode(500, new { Message = "Kategoriler alınırken bir hata oluştu" });
+		}
+	}
+
+	/// <summary>
+	/// Kategorileri listele ve filtrele (detaylı arama)
 	/// </summary>
 	/// <param name="request">Arama ve filtreleme parametreleri</param>
 	/// <returns>Sayfalanmış kategori listesi</returns>
 	/// <response code="200">Kategoriler başarıyla alındı</response>
 	/// <response code="500">Sunucu hatası</response>
-	[HttpGet]
+	[HttpGet("search")]
 	[AllowAnonymous]
-	[ProducesResponseType(typeof(CategorySearchResponse), StatusCodes.Status200OK)]
-	public async Task<ActionResult<CategorySearchResponse>> GetAll([FromQuery] CategorySearchRequest request)
+	[ProducesResponseType(typeof(CategoryListResponse), StatusCodes.Status200OK)]
+	public async Task<ActionResult<CategoryListResponse>> Search([FromQuery] CategorySearchRequest request)
 	{
 		try
 		{
-			// Page ve PageSize validation - init property'ler olduğu için atama yapılamıyor
-			var page = request.Page < 1 ? 1 : request.Page;
-			var pageSize = request.PageSize < 1 || request.PageSize > 200 ? 50 : request.PageSize;
-
-			var categories = await _unitOfWork.Categories.GetAllAsync();
-
-			var query = categories.AsQueryable();
-
-			if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+			// Convert API request to Application request
+			var listRequest = new CategoryListRequest
 			{
-				var term = request.SearchTerm.ToLowerInvariant();
-				query = query.Where(c =>
-					c.Name.ToLowerInvariant().Contains(term) ||
-					(c.Slug ?? string.Empty).ToLowerInvariant().Contains(term));
-			}
-
-			if (request.ParentId.HasValue)
-			{
-				query = query.Where(c => c.ParentId == request.ParentId.Value);
-			}
-
-			if (request.IsActive.HasValue)
-			{
-				query = query.Where(c => c.IsActive == request.IsActive.Value);
-			}
-
-			if (request.IsFeatured.HasValue)
-			{
-				query = query.Where(c => c.IsFeatured == request.IsFeatured.Value);
-			}
-
-			query = request.SortBy?.ToLowerInvariant() switch
-			{
-				"name" => request.SortOrder?.ToLowerInvariant() == "desc" ? query.OrderByDescending(c => c.Name) : query.OrderBy(c => c.Name),
-				"createdat" => request.SortOrder?.ToLowerInvariant() == "desc" ? query.OrderByDescending(c => c.CreatedAt) : query.OrderBy(c => c.CreatedAt),
-				"displayorder" => request.SortOrder?.ToLowerInvariant() == "desc" ? query.OrderByDescending(c => c.DisplayOrder) : query.OrderBy(c => c.DisplayOrder),
-				_ => query.OrderBy(c => c.DisplayOrder)
+				SearchTerm = request.SearchTerm,
+				ParentId = request.ParentId,
+				IsActive = request.IsActive,
+				IsFeatured = request.IsFeatured,
+				Page = request.Page < 1 ? 1 : request.Page,
+				PageSize = request.PageSize < 1 || request.PageSize > 200 ? 50 : request.PageSize,
+				SortBy = request.SortBy,
+				SortOrder = request.SortOrder
 			};
 
-			var totalCount = query.Count();
-			var pageItems = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
-			var result = new CategorySearchResponse
-			{
-				Categories = pageItems.Select(c => new CategoryDto
-				{
-					Id = c.Id,
-					ParentId = c.ParentId,
-					Name = c.Name,
-					Slug = c.Slug,
-					Description = c.Description,
-					ImageUrl = c.ImageUrl,
-					IconClass = c.IconClass,
-					IsActive = c.IsActive,
-					IsFeatured = c.IsFeatured,
-					DisplayOrder = c.DisplayOrder,
-					MetaTitle = c.MetaTitle,
-					MetaDescription = c.MetaDescription,
-					CreatedAt = c.CreatedAt,
-					ModifiedAt = c.ModifiedAt,
-					ProductCount = 0
-				}).ToList(),
-				TotalCount = totalCount,
-				Page = page,
-				PageSize = pageSize
-			};
-
+			var result = await _categoryService.ListAsync(listRequest);
 			return Ok(result);
 		}
 		catch (Exception ex)
@@ -125,35 +93,16 @@ public sealed class CategoriesController : ControllerBase
 	/// <response code="500">Sunucu hatası</response>
 	[HttpGet("{id}")]
 	[AllowAnonymous]
-	[ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(CategoryDetailDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public async Task<ActionResult<CategoryDto>> GetById(long id)
+	public async Task<ActionResult<CategoryDetailDto>> GetById(long id)
 	{
 		try
 		{
-			var category = await _unitOfWork.Categories.GetByIdAsync(id);
+			var category = await _categoryService.GetByIdAsync(id);
 			if (category == null) return NotFound(new { Message = "Kategori bulunamadı" });
 
-			var dto = new CategoryDto
-			{
-				Id = category.Id,
-				ParentId = category.ParentId,
-				Name = category.Name,
-				Slug = category.Slug,
-				Description = category.Description,
-				ImageUrl = category.ImageUrl,
-				IconClass = category.IconClass,
-				IsActive = category.IsActive,
-				IsFeatured = category.IsFeatured,
-				DisplayOrder = category.DisplayOrder,
-				MetaTitle = category.MetaTitle,
-				MetaDescription = category.MetaDescription,
-				CreatedAt = category.CreatedAt,
-				ModifiedAt = category.ModifiedAt,
-				ProductCount = 0
-			};
-
-			return Ok(dto);
+			return Ok(category);
 		}
 		catch (Exception ex)
 		{
@@ -175,40 +124,8 @@ public sealed class CategoriesController : ControllerBase
 	{
 		try
 		{
-			var categories = (await _unitOfWork.Categories.GetAllAsync()).ToList();
-			var map = categories.ToDictionary(c => c.Id, c => new CategoryDto
-			{
-				Id = c.Id,
-				ParentId = c.ParentId,
-				Name = c.Name,
-				Slug = c.Slug,
-				Description = c.Description,
-				ImageUrl = c.ImageUrl,
-				IconClass = c.IconClass,
-				IsActive = c.IsActive,
-				IsFeatured = c.IsFeatured,
-				DisplayOrder = c.DisplayOrder,
-				MetaTitle = c.MetaTitle,
-				MetaDescription = c.MetaDescription,
-				CreatedAt = c.CreatedAt,
-				ModifiedAt = c.ModifiedAt,
-				Children = new List<CategoryDto>()
-			});
-
-			List<CategoryDto> roots = new();
-			foreach (var cat in categories)
-			{
-				if (cat.ParentId.HasValue && map.ContainsKey(cat.ParentId.Value))
-				{
-					map[cat.ParentId.Value].Children.Add(map[cat.Id]);
-				}
-				else
-				{
-					roots.Add(map[cat.Id]);
-				}
-			}
-
-			return Ok(roots.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name));
+			var categories = await _categoryService.GetCategoryTreeAsync();
+			return Ok(categories);
 		}
 		catch (Exception ex)
 		{
@@ -228,38 +145,18 @@ public sealed class CategoriesController : ControllerBase
 	/// <response code="500">Sunucu hatası</response>
 	[HttpPost]
 	[Authorize(Roles = "Admin")]
-	[ProducesResponseType(typeof(CategoryDto), StatusCodes.Status201Created)]
+	[ProducesResponseType(typeof(CategoryDetailDto), StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	public async Task<ActionResult<CategoryDto>> Create([FromBody] CreateCategoryRequest request)
+	public async Task<ActionResult<CategoryDetailDto>> Create([FromBody] CategoryCreateRequest request)
 	{
 		try
 		{
 			if (string.IsNullOrWhiteSpace(request.Name))
 				return BadRequest(new { Message = "Kategori adı gereklidir" });
 
-			var slug = string.IsNullOrWhiteSpace(request.Slug) ? GenerateSlug(request.Name) : GenerateSlug(request.Slug);
-
-			var category = new Category
-			{
-				ParentId = request.ParentId,
-				Name = request.Name,
-				Slug = slug,
-				Description = request.Description,
-				ImageUrl = request.ImageUrl,
-				IconClass = request.IconClass,
-				IsActive = request.IsActive,
-				IsFeatured = request.IsFeatured,
-				DisplayOrder = request.DisplayOrder,
-				MetaTitle = request.MetaTitle,
-				MetaDescription = request.MetaDescription,
-				CreatedAt = DateTime.UtcNow
-			};
-
-			category = await _unitOfWork.Categories.AddAsync(category);
-			await _unitOfWork.SaveChangesAsync();
-
-			return CreatedAtAction(nameof(GetById), new { id = category.Id }, await GetById(category.Id));
+			var category = await _categoryService.CreateAsync(request);
+			return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
 		}
 		catch (Exception ex)
 		{
@@ -281,34 +178,16 @@ public sealed class CategoriesController : ControllerBase
 	/// <response code="500">Sunucu hatası</response>
 	[HttpPut("{id}")]
 	[Authorize(Roles = "Admin")]
-	[ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(CategoryDetailDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public async Task<ActionResult<CategoryDto>> Update(long id, [FromBody] UpdateCategoryRequest request)
+	public async Task<ActionResult<CategoryDetailDto>> Update(long id, [FromBody] CategoryUpdateRequest request)
 	{
 		try
 		{
-			var category = await _unitOfWork.Categories.GetByIdAsync(id);
-			if (category == null) return NotFound(new { Message = "Kategori bulunamadı" });
-
-			category.ParentId = request.ParentId;
-			category.Name = request.Name;
-			category.Slug = string.IsNullOrWhiteSpace(request.Slug) ? GenerateSlug(request.Name) : GenerateSlug(request.Slug);
-			category.Description = request.Description;
-			category.ImageUrl = request.ImageUrl;
-			category.IconClass = request.IconClass;
-			category.IsActive = request.IsActive;
-			category.IsFeatured = request.IsFeatured;
-			category.DisplayOrder = request.DisplayOrder;
-			category.MetaTitle = request.MetaTitle;
-			category.MetaDescription = request.MetaDescription;
-			category.ModifiedAt = DateTime.UtcNow;
-
-			await _unitOfWork.Categories.UpdateAsync(category);
-			await _unitOfWork.SaveChangesAsync();
-
-			return Ok((await GetById(id)).Value);
+			var category = await _categoryService.UpdateAsync(id, request);
+			return Ok(category);
 		}
 		catch (Exception ex)
 		{
@@ -335,11 +214,8 @@ public sealed class CategoriesController : ControllerBase
 	{
 		try
 		{
-			var category = await _unitOfWork.Categories.GetByIdAsync(id);
-			if (category == null) return NotFound(new { Message = "Kategori bulunamadı" });
-
-			await _unitOfWork.Categories.DeleteAsync(id);
-			await _unitOfWork.SaveChangesAsync();
+			var result = await _categoryService.DeleteAsync(id);
+			if (!result) return NotFound(new { Message = "Kategori bulunamadı" });
 
 			return Ok(new { Message = "Kategori silindi" });
 		}
@@ -350,19 +226,4 @@ public sealed class CategoriesController : ControllerBase
 		}
 	}
 
-	/// <summary>
-	/// Metin için SEO dostu slug oluştur
-	/// </summary>
-	/// <param name="name">Slug oluşturulacak metin</param>
-	/// <returns>SEO dostu slug</returns>
-	private static string GenerateSlug(string name)
-	{
-		var slug = name.ToLowerInvariant()
-			.Replace("ç", "c").Replace("ğ", "g").Replace("ı", "i")
-			.Replace("ö", "o").Replace("ş", "s").Replace("ü", "u");
-		slug = Regex.Replace(slug, @"[^a-z0-9\s-]", "");
-		slug = Regex.Replace(slug, @"\s+", "-");
-		slug = Regex.Replace(slug, @"-+", "-");
-		return slug.Trim('-');
-	}
 }

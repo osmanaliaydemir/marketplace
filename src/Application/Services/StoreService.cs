@@ -367,7 +367,7 @@ public sealed class StoreService : IStoreService
         try
         {
             var sellers = await _sellerRepository.GetAllAsync();
-            var seller = sellers.FirstOrDefault(s => s.UserId == userId);
+            var seller = sellers.FirstOrDefault(s => s.Id == userId);
             if (seller == null)
             {
                 return null;

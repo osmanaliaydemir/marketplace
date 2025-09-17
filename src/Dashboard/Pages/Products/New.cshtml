@@ -19,8 +19,22 @@
 				<input class="form-control" asp-for="Input.Name" />
 			</div>
 			<div class="col-md-3">
-				<label class="form-label">Kategori ID</label>
-				<input class="form-control" asp-for="Input.CategoryId" />
+				<label class="form-label">Kategori</label>
+				<select class="form-select" asp-for="Input.CategoryId">
+					<option value="">Kategori Seçiniz</option>
+					@foreach (var category in Model.Categories)
+					{
+						if (category.IsMainCategory)
+						{
+							<optgroup label="@category.Name">
+								@foreach (var subCategory in Model.Categories.Where(c => c.ParentId == category.Id))
+								{
+									<option value="@subCategory.Id">&nbsp;&nbsp;└ @subCategory.Name</option>
+								}
+							</optgroup>
+						}
+					}
+				</select>
 			</div>
 			<div class="col-md-3">
 				<label class="form-label">Fiyat</label>

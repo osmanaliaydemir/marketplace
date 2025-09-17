@@ -1,6 +1,7 @@
 using Application.Abstractions;
 using Domain.Entities;
 using Infrastructure.Persistence.Context;
+using Infrastructure.Persistence.Naming;
 using Microsoft.Extensions.Logging;
 using System.Data;
 using Dapper;
@@ -14,8 +15,10 @@ public sealed class CategoryRepository : Repository<Category>, ICategoryReposito
     public CategoryRepository(
         IDbContext context,
         ILogger<CategoryRepository> logger,
-        ISqlConnectionFactory connectionFactory) 
-        : base(context, logger, null, null)
+        ISqlConnectionFactory connectionFactory,
+        ITableNameResolver tableNameResolver,
+        IColumnNameResolver columnNameResolver) 
+        : base(context, logger, tableNameResolver, columnNameResolver)
     {
         _connectionFactory = connectionFactory;
     }
@@ -112,12 +115,12 @@ public sealed class CategoryRepository : Repository<Category>, ICategoryReposito
             using var connection = await _connectionFactory.CreateConnectionAsync();
             
             const string sql = @"
-                SELECT Id, Name, Description, Slug, ParentId, DisplayOrder, 
-                       IsActive, IsFeatured, MetaTitle, MetaDescription, 
-                       CreatedAt, ModifiedAt
+                SELECT Id, name, description, slug, parent_id, display_order, 
+                       is_active, is_featured, meta_title, meta_description, 
+                       created_at, modified_at
                 FROM Categories 
-                WHERE IsActive = 1 AND IsDeleted = 0
-                ORDER BY DisplayOrder, Name";
+                WHERE is_active = 1 AND isDeleted = 0
+                ORDER BY display_order, Name";
             
             var categories = await connection.QueryAsync<Category>(sql);
             

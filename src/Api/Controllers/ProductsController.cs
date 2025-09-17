@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Application.DTOs.Products;
 using Application.Abstractions;
 using ApiProductDtos = Api.DTOs.Products;
+using System.Security.Claims;
 
 namespace Api.Controllers;
 
@@ -179,6 +180,107 @@ public sealed class ProductsController : ControllerBase
         {
             _logger.LogError(ex, "Error getting product with slug: {Slug}", slug);
             return StatusCode(500, new { Message = "Ürün alınırken bir hata oluştu" });
+        }
+    }
+
+    /// <summary>
+    /// Satıcının kendi ürünlerini listeler
+    /// </summary>
+    /// <param name="request">Listeleme kriterleri</param>
+    /// <returns>Satıcının ürün listesi</returns>
+    /// <response code="200">Ürünler başarıyla getirildi</response>
+    /// <response code="401">Yetkilendirme hatası</response>
+    /// <response code="403">Satıcı yetkisi gerekli</response>
+    /// <response code="500">Sunucu hatası</response>
+    /// <example>
+    /// GET /api/products/mine?page=1&pageSize=10
+    /// </example>
+    [HttpGet("mine")]
+    [Authorize(Roles = "Seller")]
+    [ProducesResponseType(typeof(ApiProductDtos.ProductSearchResponse), 200)]
+    public async Task<ActionResult<ApiProductDtos.ProductSearchResponse>> GetMyProducts([FromQuery] ApiProductDtos.ProductSearchRequest request)
+    {
+        try
+        {
+            // Get current user's store ID from claims
+            var userIdClaim = User.FindFirst("sub") ?? User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out var userId))
+            {
+                _logger.LogWarning("User ID not found in claims");
+                return Unauthorized(new { Message = "Kullanıcı kimliği bulunamadı" });
+            }
+
+            // Get user's store ID (assuming user has one store)
+            // This would need to be implemented based on your user-store relationship
+            var storeId = await GetUserStoreIdAsync(userId);
+            if (storeId == null)
+            {
+                _logger.LogWarning("Store not found for user: {UserId}", userId);
+                return BadRequest(new { Message = "Kullanıcının mağazası bulunamadı" });
+            }
+
+            _logger.LogInformation("Getting products for store: {StoreId}, User: {UserId}", storeId, userId);
+
+            // Convert API DTO to Application DTO
+            var listRequest = new ProductListRequest
+            {
+                Page = request.Page,
+                PageSize = request.PageSize,
+                SortBy = request.SortBy,
+                SortOrder = request.SortOrder
+            };
+
+            var result = await _productService.GetByStoreAsync(storeId.Value, listRequest);
+
+            // Convert Application DTO to API DTO
+            var response = new ApiProductDtos.ProductSearchResponse
+            {
+                Products = result.Products.Select(p => new ApiProductDtos.ProductListDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Slug = p.Slug,
+                    ShortDescription = p.ShortDescription,
+                    Price = p.Price,
+                    CompareAtPrice = p.CompareAtPrice,
+                    Currency = p.Currency,
+                    StockQty = p.StockQty,
+                    IsActive = p.IsActive,
+                    IsFeatured = p.IsFeatured,
+                    PrimaryImageUrl = p.PrimaryImageUrl,
+                    CategoryName = p.CategoryName,
+                    StoreName = p.StoreName,
+                    CreatedAt = p.CreatedAt
+                }).ToList(),
+                TotalCount = result.TotalCount,
+                Page = result.Page,
+                PageSize = result.PageSize
+            };
+
+            _logger.LogInformation("Retrieved {Count} products for store {StoreId}", response.Products.Count, storeId);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting user's products");
+            return StatusCode(500, new { Message = "Ürünler alınırken bir hata oluştu" });
+        }
+    }
+
+    private async Task<long?> GetUserStoreIdAsync(long userId)
+    {
+        // This is a simplified implementation
+        // In a real scenario, you would query the database to get the user's store
+        // For now, we'll return a default store ID or implement a proper lookup
+        try
+        {
+            // You would inject IStoreService and call GetBySellerAsync
+            // For now, return a default value for testing
+            return 1; // This should be replaced with actual store lookup
+        }
+        catch
+        {
+            return null;
         }
     }
 

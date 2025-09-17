@@ -1,78 +1,71 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Application.Abstractions;
+using Web.Services;
 using Application.DTOs.Users;
-using Microsoft.AspNetCore.Http;
 
 namespace Web.Pages.Auth;
 
-public class ForgotPasswordModel : PageModel
+public sealed class ForgotPasswordModel : PageModel
 {
-    private readonly IPasswordResetService _passwordResetService;
+    private readonly ApiClient _apiClient;
     private readonly ILogger<ForgotPasswordModel> _logger;
 
-    [BindProperty]
-    public string Email { get; set; } = string.Empty;
-
-    [BindProperty]
-    public bool IsSuccess { get; set; }
-
-    [BindProperty]
-    public string Message { get; set; } = string.Empty;
-
-    [BindProperty]
-    public string ErrorMessage { get; set; } = string.Empty;
-
-    public ForgotPasswordModel(
-        IPasswordResetService passwordResetService,
-        ILogger<ForgotPasswordModel> logger)
+    public ForgotPasswordModel(ApiClient apiClient, ILogger<ForgotPasswordModel> logger)
     {
-        _passwordResetService = passwordResetService;
+        _apiClient = apiClient;
         _logger = logger;
     }
 
+    [BindProperty]
+    public ForgotPasswordInput Input { get; set; } = new();
+
+    public string? ErrorMessage { get; set; }
+    public string? SuccessMessage { get; set; }
+    public bool IsEmailSent { get; set; }
+    public string Email { get; set; } = string.Empty;
+
     public void OnGet()
     {
-        // GET request - show form
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
+        if (!ModelState.IsValid)
+        {
+            return Page();
+        }
+
+        var request = new ForgotPasswordRequest
+        {
+            Email = Input.Email
+        };
+
         try
         {
-            if (!ModelState.IsValid)
+            var response = await _apiClient.PostAsync<ForgotPasswordRequest, ForgotPasswordResponse>("/api/auth/forgot-password", request);
+            
+            if (response is null || !response.Success)
             {
+                ErrorMessage = response?.Message ?? "Şifre sıfırlama işlemi başarısız";
                 return Page();
             }
 
-            var request = new ForgotPasswordRequest
-            {
-                Email = Email
-            };
-
-            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-            var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
-
-            var response = await _passwordResetService.ForgotPasswordAsync(request, ipAddress, userAgent);
-
-            if (response.IsSuccess)
-            {
-                IsSuccess = true;
-                Message = response.Message;
-                Email = response.Email ?? Email;
-                return Page();
-            }
-            else
-            {
-                ErrorMessage = response.Message;
-                return Page();
-            }
+            IsEmailSent = true;
+            Email = Input.Email;
+            SuccessMessage = "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.";
+            
+            return Page();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in forgot password process for email: {Email}", Email);
-            ErrorMessage = "Şifre sıfırlama işlemi sırasında bir hata oluştu. Lütfen tekrar deneyiniz.";
+            _logger.LogError(ex, "Error during forgot password for email: {Email}", Input.Email);
+            ErrorMessage = "Şifre sıfırlama işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.";
             return Page();
         }
+    }
+
+    public sealed class ForgotPasswordInput
+    {
+        public string Email { get; set; } = string.Empty;
     }
 }

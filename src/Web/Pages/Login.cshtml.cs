@@ -70,8 +70,9 @@ public sealed class LoginModel : PageModel
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, new AuthenticationProperties
             {
-                IsPersistent = true,
-                AllowRefresh = true
+                IsPersistent = Input.RememberMe,
+                AllowRefresh = true,
+                ExpiresUtc = Input.RememberMe ? DateTimeOffset.UtcNow.AddDays(30) : DateTimeOffset.UtcNow.AddHours(24)
             });
 
             if (string.Equals(res.User.Role, "Seller", StringComparison.OrdinalIgnoreCase))
@@ -92,5 +93,6 @@ public sealed class LoginModel : PageModel
     {
         public string EmailOrUsername { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+        public bool RememberMe { get; set; }
     }
 }

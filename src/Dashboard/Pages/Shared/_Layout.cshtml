@@ -241,15 +241,14 @@
             <div class="d-flex align-items-center">
                 <div class="user-info me-3">
                     <i class="bi bi-person-circle me-2"></i>
-                    @{
-                        var userName = Context.Session.GetString("UserName") ?? "Admin User";
-                    }
-                    @userName
+                    @User.Identity?.Name ?? "Admin User"
                 </div>
-                <a href="/Login" class="btn btn-outline-danger btn-sm">
-                    <i class="bi bi-box-arrow-right me-1"></i>
-                    Çıkış
-                </a>
+                <form method="post" asp-page="/Logout" class="d-inline">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-box-arrow-right me-1"></i>
+                        Çıkış
+                    </button>
+                </form>
             </div>
         </div>
 

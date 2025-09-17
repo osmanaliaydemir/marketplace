@@ -14,6 +14,10 @@ public sealed record ProductCreateRequest
     [StringLength(500, ErrorMessage = "Kısa açıklama en fazla 500 karakter olabilir")]
     public string? ShortDescription { get; init; }
     
+    [Required(ErrorMessage = "SKU zorunludur")]
+    [StringLength(100, ErrorMessage = "SKU en fazla 100 karakter olabilir")]
+    public string Sku { get; init; } = string.Empty;
+    
     [Required(ErrorMessage = "Kategori seçimi zorunludur")]
     public long CategoryId { get; init; }
     

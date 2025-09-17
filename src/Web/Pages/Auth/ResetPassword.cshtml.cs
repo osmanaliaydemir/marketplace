@@ -1,101 +1,85 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Application.Abstractions;
+using Web.Services;
 using Application.DTOs.Users;
-using Microsoft.AspNetCore.Http;
 
 namespace Web.Pages.Auth;
 
-public class ResetPasswordModel : PageModel
+public sealed class ResetPasswordModel : PageModel
 {
-    private readonly IPasswordResetService _passwordResetService;
+    private readonly ApiClient _apiClient;
     private readonly ILogger<ResetPasswordModel> _logger;
 
-    [BindProperty]
-    public string Token { get; set; } = string.Empty;
-
-    [BindProperty]
-    public string NewPassword { get; set; } = string.Empty;
-
-    [BindProperty]
-    public string ConfirmPassword { get; set; } = string.Empty;
-
-    [BindProperty]
-    public bool IsSuccess { get; set; }
-
-    [BindProperty]
-    public string Message { get; set; } = string.Empty;
-
-    [BindProperty]
-    public string ErrorMessage { get; set; } = string.Empty;
-
-    public ResetPasswordModel(
-        IPasswordResetService passwordResetService,
-        ILogger<ResetPasswordModel> logger)
+    public ResetPasswordModel(ApiClient apiClient, ILogger<ResetPasswordModel> logger)
     {
-        _passwordResetService = passwordResetService;
+        _apiClient = apiClient;
         _logger = logger;
     }
 
-    public async Task<IActionResult> OnGetAsync(string token)
+    [BindProperty]
+    public ResetPasswordInput Input { get; set; } = new();
+
+    public string? ErrorMessage { get; set; }
+    public string? SuccessMessage { get; set; }
+    public bool IsPasswordReset { get; set; }
+
+    public void OnGet(string? token)
     {
         if (string.IsNullOrEmpty(token))
         {
-            ErrorMessage = "Geçersiz şifre sıfırlama bağlantısı.";
-            return Page();
+            ErrorMessage = "Geçersiz şifre sıfırlama bağlantısı";
+            return;
         }
 
-        Token = token;
-
-        // Validate token
-        var isValid = await _passwordResetService.ValidateResetTokenAsync(token);
-        if (!isValid)
-        {
-            ErrorMessage = "Geçersiz veya süresi dolmuş şifre sıfırlama bağlantısı.";
-            return Page();
-        }
-
-        return Page();
+        Input.Token = token;
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
+        if (!ModelState.IsValid)
+        {
+            return Page();
+        }
+
+        if (Input.Password != Input.ConfirmPassword)
+        {
+            ModelState.AddModelError(nameof(Input.ConfirmPassword), "Şifreler eşleşmiyor");
+            return Page();
+        }
+
+        var request = new ResetPasswordRequest
+        {
+            Token = Input.Token,
+            Password = Input.Password
+        };
+
         try
         {
-            if (!ModelState.IsValid)
+            var response = await _apiClient.PostAsync<ResetPasswordRequest, ResetPasswordResponse>("/api/auth/reset-password", request);
+            
+            if (response is null || !response.Success)
             {
+                ErrorMessage = response?.Message ?? "Şifre sıfırlama işlemi başarısız";
                 return Page();
             }
 
-            var request = new ResetPasswordRequest
-            {
-                Token = Token,
-                NewPassword = NewPassword,
-                ConfirmPassword = ConfirmPassword
-            };
-
-            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-            var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
-
-            var response = await _passwordResetService.ResetPasswordAsync(request, ipAddress, userAgent);
-
-            if (response.IsSuccess)
-            {
-                IsSuccess = true;
-                Message = response.Message;
-                return Page();
-            }
-            else
-            {
-                ErrorMessage = response.Message;
-                return Page();
-            }
+            IsPasswordReset = true;
+            SuccessMessage = "Şifreniz başarıyla sıfırlandı.";
+            
+            return Page();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in reset password process for token: {Token}", Token);
-            ErrorMessage = "Şifre sıfırlama işlemi sırasında bir hata oluştu. Lütfen tekrar deneyiniz.";
+            _logger.LogError(ex, "Error during password reset for token: {Token}", Input.Token);
+            ErrorMessage = "Şifre sıfırlama işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.";
             return Page();
         }
+    }
+
+    public sealed class ResetPasswordInput
+    {
+        public string Token { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
     }
 }

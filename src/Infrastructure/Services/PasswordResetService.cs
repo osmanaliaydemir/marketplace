@@ -41,7 +41,7 @@ public sealed class PasswordResetService : IPasswordResetService
                 _logger.LogWarning("Password reset requested for non-existent email: {Email}", request.Email);
                 return new ForgotPasswordResponse
                 {
-                    IsSuccess = true,
+                    Success = true,
                     Message = "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi. E-posta kutunuzu kontrol ediniz.",
                     Email = request.Email
                 };
@@ -76,7 +76,7 @@ public sealed class PasswordResetService : IPasswordResetService
 
             return new ForgotPasswordResponse
             {
-                IsSuccess = true,
+                Success = true,
                 Message = "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi. E-posta kutunuzu kontrol ediniz.",
                 Email = request.Email
             };
@@ -100,7 +100,7 @@ public sealed class PasswordResetService : IPasswordResetService
             {
                 return new ResetPasswordResponse
                 {
-                    IsSuccess = false,
+                    Success = false,
                     Message = "Geçersiz veya süresi dolmuş şifre sıfırlama bağlantısı."
                 };
             }
@@ -111,7 +111,7 @@ public sealed class PasswordResetService : IPasswordResetService
             {
                 return new ResetPasswordResponse
                 {
-                    IsSuccess = false,
+                    Success = false,
                     Message = "Geçersiz şifre sıfırlama bağlantısı."
                 };
             }
@@ -121,7 +121,7 @@ public sealed class PasswordResetService : IPasswordResetService
             {
                 return new ResetPasswordResponse
                 {
-                    IsSuccess = false,
+                    Success = false,
                     Message = "Bu şifre sıfırlama bağlantısı daha önce kullanılmış."
                 };
             }
@@ -131,7 +131,7 @@ public sealed class PasswordResetService : IPasswordResetService
             {
                 return new ResetPasswordResponse
                 {
-                    IsSuccess = false,
+                    Success = false,
                     Message = "Şifre sıfırlama bağlantısının süresi dolmuş."
                 };
             }
@@ -142,13 +142,13 @@ public sealed class PasswordResetService : IPasswordResetService
             {
                 return new ResetPasswordResponse
                 {
-                    IsSuccess = false,
+                    Success = false,
                     Message = "Kullanıcı bulunamadı."
                 };
             }
 
             // Update password
-            var newPasswordHash = HashPassword(request.NewPassword);
+            var newPasswordHash = HashPassword(request.Password);
             await _appUserService.UpdatePasswordAsync(user.Id, newPasswordHash);
 
             // Mark token as used
@@ -167,7 +167,7 @@ public sealed class PasswordResetService : IPasswordResetService
 
             return new ResetPasswordResponse
             {
-                IsSuccess = true,
+                Success = true,
                 Message = "Şifreniz başarıyla değiştirildi. Yeni şifrenizle giriş yapabilirsiniz.",
                 Email = user.Email
             };

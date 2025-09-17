@@ -16,7 +16,9 @@ public sealed class ApiClient
         _http = http;
         _cfg = cfg;
         _httpContextAccessor = httpContextAccessor;
-        _http.BaseAddress = new Uri(_cfg["ApiBaseUrl"]!);
+        
+        // BaseAddress zaten Program.cs'de set ediliyor
+        // _http.BaseAddress = new Uri(_cfg["ApiBaseUrl"]!);
     }
 
     private void EnsureAuthHeader()

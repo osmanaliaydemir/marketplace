@@ -790,6 +790,7 @@ public sealed class ProductService : IProductService
             Name = product.Name,
             Description = product.Description,
             ShortDescription = product.ShortDescription,
+            Sku = product.Sku,
             Slug = product.Slug,
             Price = product.Price,
             CompareAtPrice = product.CompareAtPrice,

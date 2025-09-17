@@ -68,3 +68,20 @@ public sealed class UserSearchResponse
     public int PageSize { get; set; }
     public int TotalPages { get; set; }
 }
+
+public sealed class UserRegisterRequest
+{
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public bool AcceptMarketing { get; set; }
+}
+
+public sealed class UserRegisterResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public UserDto? User { get; set; }
+}

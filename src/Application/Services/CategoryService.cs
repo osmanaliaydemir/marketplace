@@ -299,6 +299,60 @@ public sealed class CategoryService : ICategoryService
         }
     }
 
+    public async Task<IEnumerable<CategoryOptionDto>> GetCategoryOptionsAsync()
+    {
+        _logger.LogInformation("Getting category options for dropdown");
+        
+        try
+        {
+            var categories = await _categoryRepository.GetActiveCategoriesAsync();
+            
+            // Sadece aktif kategorileri al ve hiyerarşik yapıda döndür
+            var activeCategories = categories
+                .OrderBy(c => c.DisplayOrder)
+                .ThenBy(c => c.Name)
+                .ToList();
+
+            var result = new List<CategoryOptionDto>();
+
+            // Ana kategorileri ekle
+            var mainCategories = activeCategories.Where(c => c.ParentId == null);
+            foreach (var mainCat in mainCategories)
+            {
+                result.Add(new CategoryOptionDto
+                {
+                    Id = mainCat.Id,
+                    Name = mainCat.Name,
+                    Description = mainCat.Description,
+                    ParentId = mainCat.ParentId,
+                    IsMainCategory = true
+                });
+
+                // Alt kategorileri ekle
+                var subCategories = activeCategories.Where(c => c.ParentId == mainCat.Id);
+                foreach (var subCat in subCategories)
+                {
+                    result.Add(new CategoryOptionDto
+                    {
+                        Id = subCat.Id,
+                        Name = subCat.Name, // Alt kategori görsel ayrımı frontend'de yapılacak
+                        Description = subCat.Description,
+                        ParentId = subCat.ParentId,
+                        IsMainCategory = false
+                    });
+                }
+            }
+
+            _logger.LogInformation("Found {Count} category options", result.Count);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting category options");
+            throw;
+        }
+    }
+
     public async Task<bool> SetActiveAsync(long id, bool isActive)
     {
         _logger.LogInformation("Setting category active status: {CategoryId}, Active: {IsActive}", id, isActive);

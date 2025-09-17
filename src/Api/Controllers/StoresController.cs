@@ -7,7 +7,6 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/stores")]
-[Authorize(Roles = "Admin")]
 public sealed class StoresController : ControllerBase
 {
     private readonly IStoreService _storeService;
@@ -94,6 +93,7 @@ public sealed class StoresController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<IEnumerable<StoreListDto>>> GetAll()
     {
         try
@@ -127,6 +127,7 @@ public sealed class StoresController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<ActionResult<StoreDetailDto>> GetById(long id)
     {
         try
@@ -145,6 +146,7 @@ public sealed class StoresController : ControllerBase
     }
 
     [HttpGet("search")]
+    [AllowAnonymous]
     public async Task<ActionResult<StoreSearchResponse>> Search([FromQuery] StoreSearchRequest request)
     {
         try
@@ -193,6 +195,7 @@ public sealed class StoresController : ControllerBase
     }
 
     [HttpGet("stats")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<StoreStatsDto>> GetStats()
     {
         try
@@ -221,6 +224,7 @@ public sealed class StoresController : ControllerBase
     }
 
     [HttpPost("{id}/status")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateStatus(long id, [FromBody] UpdateStoreStatusRequest request)
     {
         try
@@ -241,6 +245,7 @@ public sealed class StoresController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(long id)
     {
         try

@@ -16,6 +16,7 @@ public interface ICategoryService
     Task<IEnumerable<CategoryDto>> GetRootCategoriesAsync();
     Task<IEnumerable<CategoryDto>> GetSubCategoriesAsync(long parentId);
     Task<IEnumerable<CategoryDto>> GetCategoryTreeAsync();
+    Task<IEnumerable<CategoryOptionDto>> GetCategoryOptionsAsync();
     
     // Status Management
     Task<bool> SetActiveAsync(long id, bool isActive);

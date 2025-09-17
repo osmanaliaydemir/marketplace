@@ -51,7 +51,6 @@ builder.Services.AddRateLimiter(options =>
 
 // Add health checks
 builder.Services.AddHealthChecks()
-    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy())
     .AddCheck("database", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy("Database connection is healthy"));
 
 builder.Services.AddEndpointsApiExplorer();

@@ -6,8 +6,8 @@ public static class ObservabilityExtensions
 {
     public static IServiceCollection AddObservability(this IServiceCollection services, IConfiguration cfg)
     {
-        services.AddHealthChecks()
-            .AddCheck("self", () => HealthCheckResult.Healthy());
+        // Health checks are already registered in Program.cs
+        // No need to register them again here
         return services;
     }
 }
