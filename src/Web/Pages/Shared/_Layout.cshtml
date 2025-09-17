@@ -35,39 +35,51 @@
         </div>
     </div>
 
-    <!-- Header -->
-    <header class="header sticky-top bg-white shadow-sm">
-        <nav class="navbar navbar-expand-lg navbar-light">
+    <!-- Ultra Modern Header -->
+    <header class="ultra-header sticky-top">
+        <nav class="navbar navbar-expand-lg">
             <div class="container">
-                <!-- Logo -->
-                <a class="navbar-brand fw-bold fs-3 text-primary" asp-area="" asp-page="/Index">
-                    <i class="fas fa-store me-2"></i>Marketplace
+                <!-- Modern Logo -->
+                <a class="navbar-brand ultra-brand" asp-area="" asp-page="/Index">
+                    <div class="brand-icon">
+                        <div class="icon-circle">
+                            <i class="fas fa-store"></i>
+                        </div>
+                    </div>
+                    <span class="brand-text">Marketplace</span>
                 </a>
 
-                <!-- Search Bar -->
-                <div class="search-container flex-grow-1 mx-4">
-                    <form class="d-flex" role="search">
-                        <div class="input-group">
-                            <input class="form-control border-end-0" type="search" placeholder="Mağaza, kategori veya ürün ara..." aria-label="Search">
-                            <button class="btn btn-outline-primary border-start-0" type="submit">
+                <!-- Ultra Modern Search Bar -->
+                <div class="ultra-search-container flex-grow-1 mx-4">
+                    <form class="ultra-search-form" role="search">
+                        <div class="search-wrapper">
+                            <div class="search-icon">
                                 <i class="fas fa-search"></i>
+                            </div>
+                            <input class="ultra-search-input" type="search" placeholder="Mağaza, kategori veya ürün ara..." aria-label="Search">
+                            <button class="ultra-search-btn" type="submit">
+                                <i class="fas fa-arrow-right"></i>
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <!-- Navigation -->
-                <div class="navbar-nav ms-auto align-items-center">
+                <!-- Ultra Modern Navigation -->
+                <div class="ultra-nav ms-auto">
                     @if (User?.Identity?.IsAuthenticated != true)
                     {
-                        <a class="btn btn-outline-primary me-2" href="/giris">
-                            <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                        <a class="ultra-btn ultra-btn-outline me-2" href="/giris">
+                            <span class="btn-icon">🔑</span>
+                            <span class="btn-text">Giriş Yap</span>
                         </a>
-                        <a class="btn btn-primary me-2" href="/uye-ol">
-                            <i class="fas fa-user-plus me-2"></i>Üye Ol
+                        <a class="ultra-btn ultra-btn-primary me-2" href="/uye-ol">
+                            <span class="btn-icon">👤</span>
+                            <span class="btn-text">Üye Ol</span>
                         </a>
-                        <a class="btn btn-primary me-3" href="/magaza-basvurusu">
-                            <i class="fas fa-store me-2"></i>Mağaza Başvurusu
+                        <a class="ultra-btn ultra-btn-gradient me-3" href="/magaza-basvurusu">
+                            <span class="btn-icon">🏪</span>
+                            <span class="btn-text">Mağaza Aç</span>
+                            <span class="btn-glow"></span>
                         </a>
                     }
                     else if (User.IsInRole("Seller"))
@@ -141,15 +153,163 @@
         </div>
     </header>
 
+    <!-- Breadcrumb Navigation -->
+    @if (ViewData["Breadcrumbs"] != null)
+    {
+        <nav aria-label="breadcrumb" class="breadcrumb-nav bg-light py-2">
+            <div class="container">
+                <ol class="breadcrumb mb-0">
+                    @foreach (var breadcrumb in (List<dynamic>)ViewData["Breadcrumbs"])
+                    {
+                        if (breadcrumb.IsActive)
+                        {
+                            <li class="breadcrumb-item active" aria-current="page">
+                                <i class="@breadcrumb.Icon me-1"></i>@breadcrumb.Title
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="breadcrumb-item">
+                                <a href="@breadcrumb.Url" class="breadcrumb-link">
+                                    <i class="@breadcrumb.Icon me-1"></i>@breadcrumb.Title
+                                </a>
+                            </li>
+                        }
+                    }
+                </ol>
+            </div>
+        </nav>
+    }
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="footer mt-auto py-3 bg-light">
-        <div class="container">
-            <span class="text-muted">© @DateTime.Now.Year Marketplace</span>
+    <!-- Modern Footer -->
+    <footer class="footer mt-auto">
+        <!-- Main Footer -->
+        <div class="footer-main bg-dark text-white py-4">
+            <div class="container">
+                <div class="row g-4">
+                    <!-- Company Info -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="footer-brand mb-3">
+                            <h5 class="fw-bold text-primary mb-2">
+                                <i class="fas fa-building me-2"></i>Marketplace
+                            </h5>
+                            <p class="text-light mb-3 small">
+                                Türkiye'nin güvenilir kurumsal marketplace platformu. Profesyonel işletmeler için tasarlandı.
+                            </p>
+                            <div class="social-links">
+                                <a href="#" class="social-link me-2" title="LinkedIn">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                <a href="#" class="social-link me-2" title="Twitter">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="social-link me-2" title="Facebook">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Links -->
+                    <div class="col-lg-2 col-md-6">
+                        <h6 class="fw-bold mb-3 text-primary small">Hızlı Linkler</h6>
+                        <ul class="footer-links list-unstyled">
+                            <li><a href="/" class="footer-link small">Ana Sayfa</a></li>
+                            <li><a href="/magaza-basvurusu" class="footer-link small">İşletme Başlat</a></li>
+                            <li><a href="/seller-benefits" class="footer-link small">Avantajlar</a></li>
+                            <li><a href="/categories" class="footer-link small">Kategoriler</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Support -->
+                    <div class="col-lg-2 col-md-6">
+                        <h6 class="fw-bold mb-3 text-primary small">Destek</h6>
+                        <ul class="footer-links list-unstyled">
+                            <li><a href="/help" class="footer-link small">Yardım</a></li>
+                            <li><a href="/contact" class="footer-link small">İletişim</a></li>
+                            <li><a href="/faq" class="footer-link small">SSS</a></li>
+                            <li><a href="/shipping" class="footer-link small">Kargo</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Legal -->
+                    <div class="col-lg-2 col-md-6">
+                        <h6 class="fw-bold mb-3 text-primary small">Yasal</h6>
+                        <ul class="footer-links list-unstyled">
+                            <li><a href="/privacy" class="footer-link small">Gizlilik</a></li>
+                            <li><a href="/terms" class="footer-link small">Şartlar</a></li>
+                            <li><a href="/cookies" class="footer-link small">Çerezler</a></li>
+                            <li><a href="/seller-agreement" class="footer-link small">Sözleşme</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Platform Stats -->
+                    <div class="col-lg-2 col-md-6">
+                        <h6 class="fw-bold mb-3 text-primary small">İstatistikler</h6>
+                        <div class="platform-stats">
+                            <div class="stat-item text-center mb-2">
+                                <h6 class="fw-bold text-success mb-1">50K+</h6>
+                                <small class="text-light">İşletme</small>
+                            </div>
+                            <div class="stat-item text-center mb-2">
+                                <h6 class="fw-bold text-info mb-1">2M+</h6>
+                                <small class="text-light">Ürün</small>
+                            </div>
+                            <div class="stat-item text-center mb-2">
+                                <h6 class="fw-bold text-warning mb-1">10M+</h6>
+                                <small class="text-light">Müşteri</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment & Shipping -->
+                <div class="row mt-4 pt-3 border-top border-secondary">
+                    <div class="col-md-6">
+                        <h6 class="fw-bold mb-2 text-primary small">Ödeme Yöntemleri</h6>
+                        <div class="payment-methods">
+                            <i class="fab fa-cc-visa fa-lg text-light me-2"></i>
+                            <i class="fab fa-cc-mastercard fa-lg text-light me-2"></i>
+                            <i class="fab fa-cc-paypal fa-lg text-light me-2"></i>
+                            <i class="fas fa-credit-card fa-lg text-light me-2"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold mb-2 text-primary small">Kargo Firmaları</h6>
+                        <div class="shipping-companies">
+                            <i class="fas fa-truck fa-lg text-light me-2"></i>
+                            <i class="fas fa-shipping-fast fa-lg text-light me-2"></i>
+                            <i class="fas fa-box fa-lg text-light me-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Bottom -->
+        <div class="footer-bottom bg-darker py-2">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <p class="mb-0 text-light small">
+                            © @DateTime.Now.Year Marketplace. Tüm hakları saklıdır.
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <div class="country-selector d-inline-flex align-items-center">
+                            <img src="https://flagcdn.com/16x12/tr.png" alt="Türkiye" class="me-1" width="16" height="12">
+                            <span class="text-light me-1 small">Türkiye</span>
+                            <i class="fas fa-chevron-down text-light small"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </footer>
 

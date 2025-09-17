@@ -3,98 +3,306 @@
 @{
     ViewData["Title"] = "Ürün Ekle";
 }
-<section class="container py-4">
-    <h1 class="h4 mb-3">Ürün Ekle</h1>
-    <form method="post">
-        @Html.AntiForgeryToken()
-        <div class="mb-3">
-            <label class="form-label">Ürün Adı</label>
-            <input asp-for="Input.Name" class="form-control" />
-            <span class="text-danger" asp-validation-for="Input.Name"></span>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Kısa Açıklama</label>
-            <textarea asp-for="Input.ShortDescription" class="form-control" rows="2" placeholder="Ürünün kısa tanımı"></textarea>
-            <span class="text-danger" asp-validation-for="Input.ShortDescription"></span>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Detaylı Açıklama</label>
-            <textarea asp-for="Input.Description" class="form-control" rows="4" placeholder="Ürünün detaylı açıklaması"></textarea>
-            <span class="text-danger" asp-validation-for="Input.Description"></span>
-        </div>
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <label class="form-label">Kategori</label>
-                <select asp-for="Input.CategoryId" class="form-select">
-                    <option value="">Kategori Seçiniz</option>
-                    @foreach (var category in Model.Categories)
-                    {
-                        if (category.IsMainCategory)
-                        {
-                            <optgroup label="@category.Name">
-                                @foreach (var subCategory in Model.Categories.Where(c => c.ParentId == category.Id))
-                                {
-                                    <option value="@subCategory.Id">&nbsp;&nbsp;└ @subCategory.Name</option>
-                                }
-                            </optgroup>
-                        }
-                    }
-                </select>
-                <span class="text-danger" asp-validation-for="Input.CategoryId"></span>
+
+<!-- Modern Page Header -->
+<section class="page-header py-4 mb-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 fw-bold text-white mb-2">
+                    <i class="fas fa-plus-circle me-3"></i>Yeni Ürün Ekle
+                </h1>
+                <p class="lead text-white-50 mb-0">
+                    Mağazanıza yeni ürün ekleyin ve satışa başlayın
+                </p>
             </div>
-            <div class="col-md-4 mb-3">
-                <label class="form-label">Fiyat</label>
-                <input asp-for="Input.Price" type="number" step="0.01" class="form-control" />
-            </div>
-            <div class="col-md-4 mb-3">
-                <label class="form-label">Stok</label>
-                <input asp-for="Input.StockQty" type="number" class="form-control" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-3 mb-3">
-                <label class="form-label">SKU</label>
-                <input asp-for="Input.Sku" class="form-control" placeholder="Ürün kodu" />
-                <span class="text-danger" asp-validation-for="Input.Sku"></span>
-            </div>
-            <div class="col-md-3 mb-3">
-                <label class="form-label">Para Birimi</label>
-                <select asp-for="Input.Currency" class="form-select">
-                    <option value="TRY">TRY</option>
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                </select>
-            </div>
-            <div class="col-md-3 mb-3">
-                <label class="form-label">Ağırlık (gram)</label>
-                <input asp-for="Input.Weight" type="number" step="0.001" class="form-control" />
-            </div>
-            <div class="col-md-3 mb-3">
-                <label class="form-label">Eski Fiyat</label>
-                <input asp-for="Input.CompareAtPrice" type="number" step="0.01" class="form-control" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <div class="form-check">
-                    <input asp-for="Input.IsPublished" class="form-check-input" type="checkbox" />
-                    <label class="form-check-label">Yayınla</label>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="form-check">
-                    <input asp-for="Input.IsActive" class="form-check-input" type="checkbox" />
-                    <label class="form-check-label">Aktif</label>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="form-check">
-                    <input asp-for="Input.IsFeatured" class="form-check-input" type="checkbox" />
-                    <label class="form-check-label">Öne Çıkan</label>
+            <div class="col-md-4 text-end">
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <h4 class="fw-bold text-white mb-0">@Model.Categories.Count</h4>
+                        <small class="text-white-50">Kategori</small>
+                    </div>
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary">Kaydet</button>
-        <a href="/satici/urunler" class="btn btn-secondary ms-2">İptal</a>
-    </form>
+    </div>
 </section>
+
+<!-- Modern Form -->
+<section class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="modern-form-card">
+                <form method="post" id="productForm">
+                    @Html.AntiForgeryToken()
+                    
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h5 class="section-title">
+                                <i class="fas fa-info-circle me-2"></i>Temel Bilgiler
+                            </h5>
+                            <div class="section-line"></div>
+                        </div>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <div class="form-floating">
+                                    <input asp-for="Input.Name" class="form-control" placeholder="Ürün adı" />
+                                    <label asp-for="Input.Name">Ürün Adı <span class="text-danger">*</span></label>
+                                    <span class="text-danger" asp-validation-for="Input.Name"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input asp-for="Input.Sku" class="form-control" placeholder="SKU" />
+                                    <label asp-for="Input.Sku">SKU</label>
+                                    <span class="text-danger" asp-validation-for="Input.Sku"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <textarea asp-for="Input.ShortDescription" class="form-control" placeholder="Kısa açıklama" style="height: 100px"></textarea>
+                                    <label asp-for="Input.ShortDescription">Kısa Açıklama</label>
+                                    <span class="text-danger" asp-validation-for="Input.ShortDescription"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <textarea asp-for="Input.Description" class="form-control" placeholder="Detaylı açıklama" style="height: 100px"></textarea>
+                                    <label asp-for="Input.Description">Detaylı Açıklama</label>
+                                    <span class="text-danger" asp-validation-for="Input.Description"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Category & Pricing -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h5 class="section-title">
+                                <i class="fas fa-tags me-2"></i>Kategori ve Fiyatlandırma
+                            </h5>
+                            <div class="section-line"></div>
+                        </div>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select asp-for="Input.CategoryId" class="form-select">
+                                        <option value="">Kategori Seçiniz</option>
+                                        @foreach (var category in Model.Categories)
+                                        {
+                                            if (category.IsMainCategory)
+                                            {
+                                                <optgroup label="@category.Name">
+                                                    @foreach (var subCategory in Model.Categories.Where(c => c.ParentId == category.Id))
+                                                    {
+                                                        <option value="@subCategory.Id">&nbsp;&nbsp;└ @subCategory.Name</option>
+                                                    }
+                                                </optgroup>
+                                            }
+                                        }
+                                    </select>
+                                    <label asp-for="Input.CategoryId">Kategori <span class="text-danger">*</span></label>
+                                    <span class="text-danger" asp-validation-for="Input.CategoryId"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input asp-for="Input.Price" type="number" step="0.01" class="form-control" placeholder="Fiyat" />
+                                    <label asp-for="Input.Price">Fiyat <span class="text-danger">*</span></label>
+                                    <span class="text-danger" asp-validation-for="Input.Price"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <select asp-for="Input.Currency" class="form-select">
+                                        <option value="TRY">TRY</option>
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                    </select>
+                                    <label asp-for="Input.Currency">Para Birimi</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input asp-for="Input.CompareAtPrice" type="number" step="0.01" class="form-control" placeholder="Eski fiyat" />
+                                    <label asp-for="Input.CompareAtPrice">Eski Fiyat</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input asp-for="Input.StockQty" type="number" class="form-control" placeholder="Stok" />
+                                    <label asp-for="Input.StockQty">Stok Miktarı</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input asp-for="Input.Weight" type="number" step="0.001" class="form-control" placeholder="Ağırlık" />
+                                    <label asp-for="Input.Weight">Ağırlık (gram)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input asp-for="Input.Sku" class="form-control" placeholder="SKU" />
+                                    <label asp-for="Input.Sku">SKU</label>
+                                    <span class="text-danger" asp-validation-for="Input.Sku"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Settings -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h5 class="section-title">
+                                <i class="fas fa-cog me-2"></i>Ürün Ayarları
+                            </h5>
+                            <div class="section-line"></div>
+                        </div>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="modern-checkbox">
+                                    <input asp-for="Input.IsPublished" class="form-check-input" type="checkbox" id="isPublished" />
+                                    <label class="form-check-label" for="isPublished">
+                                        <i class="fas fa-eye me-2"></i>Hemen Yayınla
+                                    </label>
+                                    <small class="text-muted d-block">Ürünü hemen müşterilere göster</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="modern-checkbox">
+                                    <input asp-for="Input.IsActive" class="form-check-input" type="checkbox" id="isActive" />
+                                    <label class="form-check-label" for="isActive">
+                                        <i class="fas fa-check-circle me-2"></i>Aktif
+                                    </label>
+                                    <small class="text-muted d-block">Ürün aktif durumda</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="modern-checkbox">
+                                    <input asp-for="Input.IsFeatured" class="form-check-input" type="checkbox" id="isFeatured" />
+                                    <label class="form-check-label" for="isFeatured">
+                                        <i class="fas fa-star me-2"></i>Öne Çıkan
+                                    </label>
+                                    <small class="text-muted d-block">Ana sayfada öne çıkar</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Ürünü Kaydet
+                        </button>
+                        <a href="/satici/urunler" class="btn btn-outline-secondary btn-lg ms-3">
+                            <i class="fas fa-times me-2"></i>İptal
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="form-sidebar">
+                <div class="sidebar-card">
+                    <h6 class="card-title">
+                        <i class="fas fa-lightbulb me-2"></i>İpuçları
+                    </h6>
+                    <ul class="tips-list">
+                        <li>
+                            <i class="fas fa-check text-success me-2"></i>
+                            Ürün adını açık ve anlaşılır yazın
+                        </li>
+                        <li>
+                            <i class="fas fa-check text-success me-2"></i>
+                            Kısa açıklama arama sonuçlarında görünür
+                        </li>
+                        <li>
+                            <i class="fas fa-check text-success me-2"></i>
+                            Detaylı açıklama müşteri güvenini artırır
+                        </li>
+                        <li>
+                            <i class="fas fa-check text-success me-2"></i>
+                            Doğru kategori seçimi önemlidir
+                        </li>
+                        <li>
+                            <i class="fas fa-check text-success me-2"></i>
+                            Rekabetçi fiyat belirleyin
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="sidebar-card">
+                    <h6 class="card-title">
+                        <i class="fas fa-chart-line me-2"></i>Hızlı İstatistikler
+                    </h6>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <h4 class="stat-number">@Model.Categories.Count</h4>
+                            <small class="stat-label">Kategori</small>
+                        </div>
+                        <div class="stat-item">
+                            <h4 class="stat-number">0</h4>
+                            <small class="stat-label">Ürün</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Form validation ve modern interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form floating labels
+            const formControls = document.querySelectorAll('.form-control, .form-select');
+            formControls.forEach(control => {
+                control.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                
+                control.addEventListener('blur', function() {
+                    if (!this.value) {
+                        this.parentElement.classList.remove('focused');
+                    }
+                });
+            });
+            
+            // Auto-save functionality
+            let saveTimeout;
+            const form = document.getElementById('productForm');
+            const inputs = form.querySelectorAll('input, textarea, select');
+            
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    clearTimeout(saveTimeout);
+                    saveTimeout = setTimeout(() => {
+                        // Auto-save logic here
+                        console.log('Auto-saving...');
+                    }, 2000);
+                });
+            });
+            
+            // Form submission with loading state
+            form.addEventListener('submit', function() {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Kaydediliyor...';
+                submitBtn.disabled = true;
+            });
+        });
+    </script>
+}

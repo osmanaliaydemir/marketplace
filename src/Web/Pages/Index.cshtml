@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model IndexModel
 @{
     ViewData["Title"] = "Marketplace - Mağaza Aç, Satışa Başla";
@@ -6,46 +6,97 @@
     ViewData["Keywords"] = "marketplace, mağaza aç, satıcı ol, online satış, e-ticaret platformu, ürün sat";
 }
 
-<!-- Hero Section - Satıcı Odaklı -->
-<section class="hero-section position-relative bg-gradient-primary text-white py-5">
-    <div class="container">
-        <div class="row align-items-center">
+<!-- Ultra Modern Hero Section -->
+<section class="ultra-hero-section">
+    <div class="hero-background">
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+            <div class="shape shape-5"></div>
+        </div>
+        <div class="gradient-overlay"></div>
+    </div>
+    
+    <div class="container position-relative">
+        <div class="row align-items-center min-vh-80">
             <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">Kendi Mağazanı Aç, Satışa Başla!</h1>
-                <p class="lead mb-4">Türkiye'nin en büyük marketplace platformunda ürünlerinizi satın, gelirinizi artırın. Binlerce müşteriye ulaşın!</p>
-                <div class="hero-buttons">
-                    <a href="/magaza-basvurusu" class="btn btn-light btn-lg px-4 me-3 mb-2">
-                        <i class="fas fa-store me-2"></i>Mağaza Aç
-                    </a>
-                    <a href="/seller-benefits" class="btn btn-outline-light btn-lg px-4 mb-2">
-                        <i class="fas fa-info-circle me-2"></i>Detayları Öğren
-                    </a>
-                </div>
-                <div class="hero-stats mt-4">
-                    <div class="row text-center">
-                        <div class="col-4">
-                            <div class="stat-item">
-                                <h3 class="fw-bold mb-0">50K+</h3>
-                                <small>Satıcı</small>
-                            </div>
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <span class="badge-text">🏢 Türkiye'nin Güvenilir Marketplace'i</span>
+                    </div>
+                    
+                    <h1 class="hero-title">
+                        <span class="title-line-1">Profesyonel</span>
+                        <span class="title-line-2">Marketplace</span>
+                        <span class="title-line-3 highlight-text">Platformu</span>
+                    </h1>
+                    
+                    <p class="hero-description">
+                        Güvenilir ve profesyonel marketplace platformumuzda işletmenizi büyütün, 
+                        <span class="highlight-text">satışlarınızı artırın</span>. 
+                        Binlerce müşteriye güvenle ulaşın!
+                    </p>
+                    
+                    <div class="hero-buttons">
+                        <a href="/magaza-basvurusu" class="btn btn-primary btn-lg hero-btn-primary">
+                            <span class="btn-icon">🏢</span>
+                            <span class="btn-text">İşletme Başlat</span>
+                            <span class="btn-arrow">→</span>
+                        </a>
+                        <a href="/seller-benefits" class="btn btn-outline-light btn-lg hero-btn-secondary">
+                            <span class="btn-icon">📊</span>
+                            <span class="btn-text">Avantajları Gör</span>
+                        </a>
+                    </div>
+                    
+                    <div class="hero-stats">
+                        <div class="stat-card">
+                            <div class="stat-number" data-count="50000">0</div>
+                            <div class="stat-label">Aktif İşletme</div>
                         </div>
-                        <div class="col-4">
-                            <div class="stat-item">
-                                <h3 class="fw-bold mb-0">2M+</h3>
-                                <small>Ürün</small>
-                            </div>
+                        <div class="stat-card">
+                            <div class="stat-number" data-count="2000000">0</div>
+                            <div class="stat-label">Ürün Çeşidi</div>
                         </div>
-                        <div class="col-4">
-                            <div class="stat-item">
-                                <h3 class="fw-bold mb-0">10M+</h3>
-                                <small>Müşteri</small>
-                            </div>
+                        <div class="stat-card">
+                            <div class="stat-number" data-count="10000000">0</div>
+                            <div class="stat-label">Güvenilir Müşteri</div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6 text-center">
-                <img src="https://via.placeholder.com/600x400/ffffff/0d6efd?text=Marketplace+Platform" alt="Marketplace Platform" class="img-fluid rounded shadow-lg">
+            
+            <div class="col-lg-6">
+                <div class="hero-visual">
+                        <div class="floating-cards">
+                            <div class="floating-card card-1">
+                                <div class="card-icon">💼</div>
+                                <div class="card-text">İş Çözümleri</div>
+                            </div>
+                            <div class="floating-card card-2">
+                                <div class="card-icon">🏭</div>
+                                <div class="card-text">Endüstriyel</div>
+                            </div>
+                            <div class="floating-card card-3">
+                                <div class="card-icon">🏢</div>
+                                <div class="card-text">Kurumsal</div>
+                            </div>
+                            <div class="floating-card card-4">
+                                <div class="card-icon">📊</div>
+                                <div class="card-text">Analitik</div>
+                            </div>
+                        </div>
+                    <div class="hero-image">
+                        <div class="image-placeholder">
+                            <div class="placeholder-content">
+                                <div class="placeholder-icon">🏢</div>
+                                <div class="placeholder-text">Kurumsal Platform</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -458,52 +509,186 @@
 
 @section Scripts {
     <script>
-        // Store Card Hover Effects
-        document.querySelectorAll('.store-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px)';
-                this.style.transition = 'transform 0.3s ease';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
-        });
+        // Ultra Modern Animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Counter Animation for Stats
+            function animateCounter(element, target) {
+                let current = 0;
+                const increment = target / 100;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    element.textContent = Math.floor(current).toLocaleString();
+                }, 20);
+            }
 
-        // Category Card Hover Effects
-        document.querySelectorAll('.category-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'scale(1.05)';
-                this.style.transition = 'transform 0.3s ease';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'scale(1)';
-            });
-        });
+            // Intersection Observer for animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
 
-        // Process Card Hover Effects
-        document.querySelectorAll('.process-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-3px)';
-                this.style.transition = 'transform 0.3s ease';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
-        });
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                        
+                        // Animate counters when stats come into view
+                        if (entry.target.classList.contains('stat-number')) {
+                            const target = parseInt(entry.target.dataset.count);
+                            animateCounter(entry.target, target);
+                        }
+                    }
+                });
+            }, observerOptions);
 
-        // Testimonial Card Hover Effects
-        document.querySelectorAll('.testimonial-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-3px)';
-                this.style.transition = 'transform 0.3s ease';
+            // Observe all animated elements
+            document.querySelectorAll('.stat-number, .benefit-card, .category-card, .store-card, .process-card, .testimonial-card').forEach(el => {
+                observer.observe(el);
             });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
+
+            // Enhanced Hover Effects
+            document.querySelectorAll('.store-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px) scale(1.02)';
+                    this.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15)';
+                    this.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.08)';
+                });
+            });
+
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.08) rotate(2deg)';
+                    this.style.boxShadow = '0 15px 30px rgba(99, 102, 241, 0.2)';
+                    this.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1) rotate(0deg)';
+                    this.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.08)';
+                });
+            });
+
+            document.querySelectorAll('.process-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.03)';
+                    this.style.boxShadow = '0 15px 30px rgba(16, 185, 129, 0.2)';
+                    this.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.08)';
+                });
+            });
+
+            document.querySelectorAll('.testimonial-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.02)';
+                    this.style.boxShadow = '0 15px 30px rgba(245, 158, 11, 0.2)';
+                    this.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.08)';
+                });
+            });
+
+            // Floating Cards Animation
+            document.querySelectorAll('.floating-card').forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.5}s`;
+            });
+
+            // Parallax Effect for Hero Section
+            window.addEventListener('scroll', () => {
+                const scrolled = window.pageYOffset;
+                const parallax = document.querySelector('.hero-background');
+                if (parallax) {
+                    parallax.style.transform = `translateY(${scrolled * 0.5}px)`;
+                }
+            });
+
+            // Dynamic Gradient Animation
+            let gradientAngle = 0;
+            setInterval(() => {
+                gradientAngle += 1;
+                document.documentElement.style.setProperty('--gradient-angle', `${gradientAngle}deg`);
+            }, 50);
+
+            // Search Enhancement
+            const searchInput = document.querySelector('.ultra-search-input');
+            if (searchInput) {
+                searchInput.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'scale(1.02)';
+                });
+                
+                searchInput.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'scale(1)';
+                });
+            }
+
+            // Button Ripple Effect
+            document.querySelectorAll('.ultra-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.classList.add('ripple');
+                    
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
             });
         });
     </script>
+    
+    <style>
+        /* Additional CSS for animations */
+        .animate-in {
+            animation: slideInUp 0.8s ease-out forwards;
+        }
+        
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+        
+        @@keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* Enhanced hover states */
+        .benefit-card, .category-card, .store-card, .process-card, .testimonial-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .benefit-card:hover, .category-card:hover, .store-card:hover, .process-card:hover, .testimonial-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
 }

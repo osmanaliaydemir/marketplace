@@ -44,6 +44,15 @@ public sealed class CreateModel : PageModel
             _logger.LogError(ex, "Error loading categories");
             Categories = new List<CategoryOption>();
         }
+
+        // Breadcrumb ayarla
+        ViewData["Breadcrumbs"] = new List<dynamic>
+        {
+            new { Title = "Ana Sayfa", Url = "/", Icon = "fas fa-home", IsActive = false },
+            new { Title = "Satıcı Paneli", Url = "/satici/panel", Icon = "fas fa-tachometer-alt", IsActive = false },
+            new { Title = "Ürünlerim", Url = "/satici/urunler", Icon = "fas fa-box", IsActive = false },
+            new { Title = "Yeni Ürün", Url = "", Icon = "fas fa-plus", IsActive = true }
+        };
     }
 
     public sealed class CategoryOption
